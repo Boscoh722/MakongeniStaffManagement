@@ -28,6 +28,11 @@ const leaveRoutes = require('./routes/leave.routes');
 const attendanceRoutes = require('./routes/attendance.routes');
 const disciplinaryRoutes = require('./routes/disciplinary.routes');
 const adminRoutes = require('./routes/admin.routes');
+const emailRoutes = require('./routes/email.routes');
+const reportRoutes = require('./routes/report.routes');
+const auditRoutes = require('./routes/audit.routes');
+
+
 
 app.use('/api/auth', authRoutes);
 app.use('/api/staff', staffRoutes);
@@ -35,6 +40,9 @@ app.use('/api/leaves', leaveRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/disciplinary', disciplinaryRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/email', emailRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/audit', auditRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
