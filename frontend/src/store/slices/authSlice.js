@@ -1,14 +1,16 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import api from '../../services/api';
 import toast from 'react-hot-toast';
 
 export const login = createAsyncThunk(
   'auth/login',
   async ({ email, password }, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/api/auth/login', { email, password });
+      const response = await api.post('/auth/login', { email, password });
+
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
+
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.error || 'Login failed');
@@ -30,6 +32,7 @@ const authSlice = createSlice({
       localStorage.removeItem('user');
       state.user = null;
       state.token = null;
+      toast.success('Logged out');
     },
     clearError: (state) => {
       state.error = null;
