@@ -1,135 +1,112 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { staffService } from '../../services/staffService';
-import {
-  CheckCircleIcon,
-  XCircleIcon,
-  ClockIcon,
-  CalendarIcon,
-  ExclamationTriangleIcon,
-  UserGroupIcon,
-  MagnifyingGlassIcon,
-  ArrowDownTrayIcon
-} from '@heroicons/react/24/outline';
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 import toast from 'react-hot-toast';
 
 const MarkAttendance = () => {
   const { user } = useSelector((state) => state.auth);
   const [staff, setStaff] = useState([]);
-  const [attendance, setAttendance] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [searchTerm, setSearchTerm] = useState('');
-  const [departmentFilter, setDepartmentFilter] = useState('');
+  const [attendanceData, setAttendanceData] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchStaff();
-    fetchAttendance();
-  }, [selectedDate]);
+  }, []);
 
   const fetchStaff = async () => {
     try {
+      setLoading(true);
       const response = await staffService.getStaff();
-      setStaff(response.data);
-    } catch (error) {
-      toast.error('Failed to fetch staff');
-    }
-  };
-
-  const fetchAttendance = async () => {
-    try {
-      const response = await staffService.getAttendance({
-        date: selectedDate.toISOString().split('T')[0]
+      const staffData = response.data || [];
+      
+      // Initialize attendance data for each staff member
+      const initialAttendance = {};
+      
+      staffData.forEach(employee => {
+        initialAttendance[employee._id] = {
+          status: 'present', // Default status
+          remarks: '',
+          staffId: employee._id, // Make sure this is included
+          employeeName: `${employee.firstName} ${employee.lastName}`,
+          department: employee.department?.name || employee.department || 'Unknown'
+        };
       });
-      setAttendance(response.data);
+      
+      setStaff(staffData);
+      setAttendanceData(initialAttendance);
+      
     } catch (error) {
-      console.error('Failed to fetch attendance:', error);
+      console.error('Error fetching staff:', error);
+      toast.error('Failed to load staff data');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleMarkAttendance = async (staffId, status) => {
+  const handleMarkAttendance = async () => {
     try {
-      await staffService.markAttendance({
-        staffId,
+      setSaving(true);
+      
+      // Prepare data for bulk endpoint
+      const attendanceArray = Object.values(attendanceData).map(data => ({
+        staffId: data.staffId,
+        status: data.status,
+        remarks: data.remarks || ''
+      }));
+
+       console.log('Sending bulk attendance data for', attendanceArray.length, 'staff members');
+
+      // Use bulk endpoint for marking multiple staff at once
+      const response = await staffService.markAttendance({
         date: selectedDate.toISOString().split('T')[0],
-        status
+        attendanceData: attendanceArray
       });
-      toast.success(`Marked as ${status}`);
-      fetchAttendance();
+      
+      console.log('Response:', response);
+      toast.success(`Attendance marked for ${attendanceArray.length} staff members`);
+      
+      // Reset remarks after saving
+      const resetAttendance = { ...attendanceData };
+      Object.keys(resetAttendance).forEach(key => {
+        resetAttendance[key].remarks = '';
+      });
+      setAttendanceData(resetAttendance);
+      
     } catch (error) {
-      toast.error('Failed to mark attendance');
+    console.error('Mark attendance error:', error);
+    console.error('Error details:', error.response?.data);
+      
+      // More specific error messages
+      if (error.response?.data?.error?.includes('Missing required fields')) {
+      toast.error('Error: Some staff members are missing required data. Please check all entries.');
+    } else {
+      toast.error(error.response?.data?.error || 'Failed to mark attendance');
     }
-  };
+  } finally {
+    setSaving(false);
+  }
+};
 
-  const handleBulkMark = async (status) => {
-    if (!window.confirm(`Mark all filtered staff as ${status}?`)) return;
-    
-    try {
-      const filteredStaffIds = filteredStaff.map(s => s._id);
-      for (const staffId of filteredStaffIds) {
-        await staffService.markAttendance({
-          staffId,
-          date: selectedDate.toISOString().split('T')[0],
-          status
-        });
+  const updateAttendance = (staffId, field, value) => {
+    setAttendanceData(prev => ({
+      ...prev,
+      [staffId]: {
+        ...prev[staffId],
+        [field]: value
       }
-      toast.success(`Bulk marked as ${status}`);
-      fetchAttendance();
-    } catch (error) {
-      toast.error('Failed to bulk mark attendance');
-    }
+    }));
   };
 
-  const getAttendanceStatus = (staffId) => {
-    const record = attendance.find(a => a.staff._id === staffId);
-    return record ? record.status : null;
+  const handleMarkAll = (status) => {
+    const updatedData = { ...attendanceData };
+    Object.keys(updatedData).forEach(staffId => {
+      updatedData[staffId].status = status;
+    });
+    setAttendanceData(updatedData);
+    toast.success(`All staff marked as ${status}`);
   };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'present': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'absent': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-      case 'late': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-      case 'leave': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-      case 'off-duty': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'present': return <CheckCircleIcon className="h-5 w-5" />;
-      case 'absent': return <XCircleIcon className="h-5 w-5" />;
-      case 'late': return <ExclamationTriangleIcon className="h-5 w-5" />;
-      case 'leave': return <ClockIcon className="h-5 w-5" />;
-      default: return <ClockIcon className="h-5 w-5" />;
-    }
-  };
-
-  const filteredStaff = staff.filter(employee => {
-    const matchesSearch = 
-      employee.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.employeeId.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesDepartment = !departmentFilter || employee.department === departmentFilter;
-
-    return matchesSearch && matchesDepartment;
-  });
-
-  const departments = [...new Set(staff.map(s => s.department))];
-
-  const statusButtons = [
-    { status: 'present', label: 'Present', icon: CheckCircleIcon, color: 'bg-green-600 hover:bg-green-700' },
-    { status: 'absent', label: 'Absent', icon: XCircleIcon, color: 'bg-red-600 hover:bg-red-700' },
-    { status: 'late', label: 'Late', icon: ExclamationTriangleIcon, color: 'bg-yellow-600 hover:bg-yellow-700' },
-    { status: 'leave', label: 'Leave', icon: ClockIcon, color: 'bg-blue-600 hover:bg-blue-700' },
-    { status: 'off-duty', label: 'Off Duty', icon: CalendarIcon, color: 'bg-gray-600 hover:bg-gray-700' }
-  ];
 
   return (
     <div className="space-y-6">
@@ -138,143 +115,87 @@ const MarkAttendance = () => {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Mark Attendance</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Mark daily attendance for staff members
+            Mark attendance for all staff members
           </p>
         </div>
-        <button
-          onClick={() => {
-            // Export functionality
-            toast.success('Export functionality will be implemented');
-          }}
-          className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 flex items-center"
-        >
-          <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
-          Export
-        </button>
-      </div>
-
-      {/* Date Selection and Bulk Actions */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Date Selection */}
+        
+        <div className="flex items-center space-x-4">
+          {/* Date Picker */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Select Date
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Date
             </label>
-            <DatePicker
-              selected={selectedDate}
-              onChange={setSelectedDate}
-              maxDate={new Date()}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark-green-500 focus:border-dark-green-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white"
+            <input
+              type="date"
+              value={selectedDate.toISOString().split('T')[0]}
+              onChange={(e) => setSelectedDate(new Date(e.target.value))}
+              max={new Date().toISOString().split('T')[0]} // Can't mark future dates
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark-green-500 focus:border-dark-green-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white"
             />
           </div>
-
-          {/* Search */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Search Staff
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark-green-500 focus:border-dark-green-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white"
-                placeholder="Search by name or ID..."
-              />
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" />
-            </div>
-          </div>
-
-          {/* Department Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Department
-            </label>
-            <select
-              value={departmentFilter}
-              onChange={(e) => setDepartmentFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark-green-500 focus:border-dark-green-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white"
+          
+          {/* Quick Actions */}
+          <div className="flex space-x-2">
+            <button
+              onClick={() => handleMarkAll('present')}
+              className="px-3 py-2 bg-green-100 text-green-800 rounded-lg text-sm font-medium hover:bg-green-200 dark:bg-green-900 dark:text-green-300"
             >
-              <option value="">All Departments</option>
-              {departments.map(dept => (
-                <option key={dept} value={dept}>{dept}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Quick Stats */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Today's Summary
-            </label>
-            <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                {filteredStaff.length} staff to mark
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bulk Action Buttons */}
-        <div className="mt-6">
-          <div className="flex flex-wrap gap-3">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 self-center">
-              Bulk Actions:
-            </span>
-            {statusButtons.map((btn) => (
-              <button
-                key={btn.status}
-                onClick={() => handleBulkMark(btn.status)}
-                className={`px-4 py-2 text-white rounded-lg text-sm font-medium flex items-center ${btn.color}`}
-              >
-                <btn.icon className="h-4 w-4 mr-2" />
-                Mark All as {btn.label}
-              </button>
-            ))}
+              Mark All Present
+            </button>
+            <button
+              onClick={() => handleMarkAll('absent')}
+              className="px-3 py-2 bg-red-100 text-red-800 rounded-lg text-sm font-medium hover:bg-red-200 dark:bg-red-900 dark:text-red-300"
+            >
+              Mark All Absent
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Attendance Grid */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-dark-green-600"></div>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-900">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Staff Member
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Department
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Current Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredStaff.map((employee) => {
-                  const currentStatus = getAttendanceStatus(employee._id);
-                  
-                  return (
+      {loading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-dark-green-600"></div>
+        </div>
+      ) : (
+        <>
+          {/* Attendance Table */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Staff Member
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Department
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Remarks
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Last Marked
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {staff.map((employee) => (
                     <tr key={employee._id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="h-10 w-10 flex-shrink-0">
-                            <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                              <span className="text-lg font-medium text-gray-600 dark:text-gray-300">
-                                {employee.firstName.charAt(0)}{employee.lastName.charAt(0)}
-                              </span>
-                            </div>
+                            {employee.profileImage ? (
+                              <img className="h-10 w-10 rounded-full" src={employee.profileImage} alt="" />
+                            ) : (
+                              <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                <span className="text-lg font-medium text-gray-600 dark:text-gray-300">
+                                  {employee.firstName?.charAt(0)}{employee.lastName?.charAt(0)}
+                                </span>
+                              </div>
+                            )}
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900 dark:text-white">
@@ -286,111 +207,105 @@ const MarkAttendance = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
-                        {employee.department}
-                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {currentStatus ? (
-                          <div className="flex items-center">
-                            <div className={`p-1 rounded-full mr-2 ${getStatusColor(currentStatus)}`}>
-                              {getStatusIcon(currentStatus)}
-                            </div>
-                            <span className={`text-sm font-medium capitalize ${getStatusColor(currentStatus)} px-2 py-1 rounded-full`}>
-                              {currentStatus}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-sm text-gray-500 dark:text-gray-400">Not marked</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex flex-wrap gap-2">
-                          {statusButtons.map((btn) => (
-                            <button
-                              key={btn.status}
-                              onClick={() => handleMarkAttendance(employee._id, btn.status)}
-                              className={`px-3 py-1 text-white rounded text-xs font-medium flex items-center ${btn.color} ${
-                                currentStatus === btn.status ? 'ring-2 ring-offset-1 ring-white' : ''
-                              }`}
-                            >
-                              <btn.icon className="h-3 w-3 mr-1" />
-                              {btn.label}
-                            </button>
-                          ))}
+                        <div className="text-sm text-gray-900 dark:text-white">
+                          {employee.department?.name || employee.department || 'Unknown'}
                         </div>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <select
+                          value={attendanceData[employee._id]?.status || 'present'}
+                          onChange={(e) => updateAttendance(employee._id, 'status', e.target.value)}
+                          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark-green-500 focus:border-dark-green-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white w-full"
+                        >
+                          <option value="present">Present</option>
+                          <option value="absent">Absent</option>
+                          <option value="late">Late</option>
+                          <option value="leave">On Leave</option>
+                          <option value="off-duty">Off Duty</option>
+                          <option value="sick">Sick Leave</option>
+                        </select>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <input
+                          type="text"
+                          value={attendanceData[employee._id]?.remarks || ''}
+                          onChange={(e) => updateAttendance(employee._id, 'remarks', e.target.value)}
+                          placeholder="Add remarks..."
+                          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark-green-500 focus:border-dark-green-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white w-full"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {/* You could fetch and display last attendance date here */}
+                        Not available
+                      </td>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        )}
-      </div>
 
-      {/* Summary Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        {statusButtons.map((btn) => {
-          const count = filteredStaff.filter(employee => 
-            getAttendanceStatus(employee._id) === btn.status
-          ).length;
-          
-          const Icon = btn.icon;
-          
-          return (
-            <div key={btn.status} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                    {btn.label}
-                  </p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-                    {count}
-                  </p>
+          {/* Save Button */}
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={fetchStaff}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+              disabled={saving}
+            >
+              Refresh List
+            </button>
+            <button
+              onClick={handleMarkAttendance}
+              disabled={saving}
+              className={`px-6 py-2 rounded-lg text-sm font-medium text-white flex items-center ${
+                saving 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-dark-green-600 hover:bg-dark-green-700'
+              }`}
+            >
+              {saving ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Saving...
+                </>
+              ) : (
+                'Save Attendance'
+              )}
+            </button>
+          </div>
+
+          {/* Stats Summary */}
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {Object.values(attendanceData).filter(a => a.status === 'present').length}
                 </div>
-                <div className={`p-3 rounded-full ${getStatusColor(btn.status)}`}>
-                  <Icon className="h-6 w-6" />
-                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Present</div>
               </div>
-              <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
-                {((count / filteredStaff.length) * 100 || 0).toFixed(1)}% of staff
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {Object.values(attendanceData).filter(a => a.status === 'absent').length}
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Absent</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {Object.values(attendanceData).filter(a => a.status === 'late').length}
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Late</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {Object.values(attendanceData).filter(a => a.status === 'leave').length}
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">On Leave</div>
               </div>
             </div>
-          );
-        })}
-      </div>
-
-      {/* Quick Notes */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Quick Notes
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-            <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2">
-              Best Practices
-            </h4>
-            <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
-              <li>• Mark attendance before 10:00 AM daily</li>
-              <li>• Verify with supervisors for questionable cases</li>
-              <li>• Update status changes throughout the day</li>
-              <li>• Document reasons for extended absences</li>
-            </ul>
           </div>
-          <div className="p-4 bg-green-50 dark:bg-green-900/30 rounded-lg">
-            <h4 className="font-medium text-green-900 dark:text-green-200 mb-2">
-              Status Guidelines
-            </h4>
-            <ul className="text-sm text-green-800 dark:text-green-300 space-y-1">
-              <li>• <strong>Present:</strong> Staff is at work</li>
-              <li>• <strong>Absent:</strong> No notification received</li>
-              <li>• <strong>Late:</strong> Arrived after official start time</li>
-              <li>• <strong>Leave:</strong> Approved time off</li>
-              <li>• <strong>Off Duty:</strong> Scheduled day off</li>
-            </ul>
-          </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 };

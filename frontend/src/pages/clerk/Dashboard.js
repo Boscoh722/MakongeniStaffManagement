@@ -5,16 +5,15 @@ import {
   UserGroupIcon,
   CheckCircleIcon,
   XCircleIcon,
-  ClockIcon,
   CalendarIcon,
   ArrowRightIcon,
-  ChartBarIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
 
 const ClerkDashboard = () => {
   const { user } = useSelector((state) => state.auth);
+
   const [todayStats, setTodayStats] = useState({
     totalStaff: 0,
     present: 0,
@@ -22,6 +21,7 @@ const ClerkDashboard = () => {
     late: 0,
     onLeave: 0
   });
+
   const [pendingLeaves, setPendingLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,12 +32,14 @@ const ClerkDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       const [attendanceResponse, leavesResponse] = await Promise.all([
-        staffService.getAttendance({ date: new Date().toISOString().split('T')[0] }),
+        staffService.getAttendance({
+          date: new Date().toISOString().split('T')[0]
+        }),
         staffService.getAllLeaves({ status: 'pending' })
       ]);
 
       const attendance = attendanceResponse.data;
-      
+
       setTodayStats({
         totalStaff: attendance.length,
         present: attendance.filter(a => a.status === 'present').length,
@@ -128,14 +130,17 @@ const ClerkDashboard = () => {
         <p className="mt-2 opacity-90">
           Welcome, {user?.firstName}. Manage daily attendance and administrative tasks.
         </p>
+
         <div className="mt-4 flex items-center">
           <CalendarIcon className="h-5 w-5 mr-2" />
-          <span>{new Date().toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}</span>
+          <span>
+            {new Date().toLocaleDateString('en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+          </span>
         </div>
       </div>
 
@@ -145,12 +150,8 @@ const ClerkDashboard = () => {
           <div key={stat.title} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                  {stat.title}
-                </p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-                  {stat.value}
-                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">{stat.title}</p>
+                <p className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">{stat.value}</p>
               </div>
               <div className={`p-3 rounded-full ${stat.color}`}>
                 <stat.icon className="h-6 w-6" />
@@ -164,9 +165,7 @@ const ClerkDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Quick Actions */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Quick Actions
-          </h3>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Quick Actions</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {quickActions.map((action) => (
               <Link
@@ -179,9 +178,7 @@ const ClerkDashboard = () => {
                     <action.icon className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {action.title}
-                    </p>
+                    <p className="font-medium text-gray-900 dark:text-white">{action.title}</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                       {action.description}
                     </p>
@@ -198,7 +195,7 @@ const ClerkDashboard = () => {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               Pending Leave Applications
             </h3>
-            <Link 
+            <Link
               to="/clerk/leaves"
               className="text-sm text-dark-green-600 hover:text-dark-green-700 dark:text-dark-green-400 flex items-center"
             >
@@ -206,7 +203,7 @@ const ClerkDashboard = () => {
               <ArrowRightIcon className="h-4 w-4 ml-1" />
             </Link>
           </div>
-          
+
           {pendingLeaves.length === 0 ? (
             <div className="text-center py-8">
               <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto" />
@@ -224,13 +221,15 @@ const ClerkDashboard = () => {
                         {leave.staff.firstName} {leave.staff.lastName}
                       </h4>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {leave.leaveType.charAt(0).toUpperCase() + leave.leaveType.slice(1)} • {leave.numberOfDays} days
+                        {leave.leaveType.charAt(0).toUpperCase() + leave.leaveType.slice(1)} •{' '}
+                        {leave.numberOfDays} days
                       </p>
                     </div>
                     <span className="text-xs text-gray-500">
                       {new Date(leave.startDate).toLocaleDateString()}
                     </span>
                   </div>
+
                   <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
                     {leave.reason.substring(0, 60)}...
                   </div>
@@ -243,42 +242,18 @@ const ClerkDashboard = () => {
 
       {/* Today's Attendance Summary */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
           Today's Attendance Summary
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {todayStats.present}
-            </div>
-            <div className="text-sm text-blue-800 dark:text-blue-300">Present</div>
-          </div>
-          <div className="text-center p-4 bg-red-50 dark:bg-red-900/30 rounded-lg">
-            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-              {todayStats.absent}
-            </div>
-            <div className="text-sm text-red-800 dark:text-red-300">Absent</div>
-          </div>
-          <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg">
-            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-              {todayStats.late}
-            </div>
-            <div className="text-sm text-yellow-800 dark:text-yellow-300">Late</div>
-          </div>
-          <div className="text-center p-4 bg-green-50 dark:bg-green-900/30 rounded-lg">
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {todayStats.onLeave}
-            </div>
-            <div className="text-sm text-green-800 dark:text-green-300">On Leave</div>
-          </div>
-          <div className="text-center p-4 bg-gray-50 dark:bg-gray-900/30 rounded-lg">
-            <div className="text-2xl font-bold text-gray-600 dark:text-gray-400">
-              {todayStats.totalStaff}
-            </div>
-            <div className="text-sm text-gray-800 dark:text-gray-300">Total</div>
-          </div>
-        </div>
         
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <SummaryCard label="Present" value={todayStats.present} color="blue" />
+          <SummaryCard label="Absent" value={todayStats.absent} color="red" />
+          <SummaryCard label="Late" value={todayStats.late} color="yellow" />
+          <SummaryCard label="On Leave" value={todayStats.onLeave} color="green" />
+          <SummaryCard label="Total" value={todayStats.totalStaff} color="gray" />
+        </div>
+
         <div className="mt-6">
           <Link
             to="/clerk/attendance"
@@ -292,5 +267,16 @@ const ClerkDashboard = () => {
     </div>
   );
 };
+
+const SummaryCard = ({ label, value, color }) => (
+  <div className={`text-center p-4 bg-${color}-50 dark:bg-${color}-900/30 rounded-lg`}>
+    <div className={`text-2xl font-bold text-${color}-600 dark:text-${color}-400`}>
+      {value}
+    </div>
+    <div className={`text-sm text-${color}-800 dark:text-${color}-300`}>
+      {label}
+    </div>
+  </div>
+);
 
 export default ClerkDashboard;

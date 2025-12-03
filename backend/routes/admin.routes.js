@@ -8,62 +8,123 @@ const Disciplinary = require('../models/Disciplinary');
 const EmailTemplate = require('../models/EmailTemplate');
 const { sendEmail } = require('../utils/emailService');
 
-// Dashboard statistics
+// Dashboard statistics - UPDATED FOR REAL DATA
 router.get('/dashboard/stats', auth, authorize('admin'), async (req, res) => {
   try {
-    const [
-      totalStaff,
-      activeStaff,
-      pendingLeaves,
-      todayAttendance,
-      openCases,
-      recentActivities
-    ] = await Promise.all([
-      User.countDocuments({ role: 'staff' }),
-      User.countDocuments({ role: 'staff', isActive: true }),
-      Leave.countDocuments({ status: 'pending' }),
-      Attendance.countDocuments({ 
-        date: { 
-          $gte: new Date().setHours(0, 0, 0, 0),
-          $lt: new Date().setHours(23, 59, 59, 999)
-        }
-      }),
-      Disciplinary.countDocuments({ status: { $in: ['open', 'under-review'] } }),
-      // Get recent activities from audit log
-      getRecentActivities()
-    ]);
-
-    // Get attendance for today
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-    const attendanceToday = await Attendance.find({
-      date: { $gte: today, $lt: tomorrow }
-    }).populate('staff', 'firstName lastName department');
-
-    const attendanceStats = {
-      present: attendanceToday.filter(a => a.status === 'present').length,
-      absent: attendanceToday.filter(a => a.status === 'absent').length,
-      leave: attendanceToday.filter(a => a.status === 'leave').length,
-      offDuty: attendanceToday.filter(a => a.status === 'off-duty').length
-    };
-
-    // Get monthly trends
-    const monthlyTrends = await getMonthlyTrends();
-
-    res.json({
+    // Fetch all data in parallel for efficiency
+    const [
       totalStaff,
       activeStaff,
-      pendingLeaves,
       todayAttendance,
-      openCases,
+      todayLeaves,
+      monthlyLeaves,
+      recentLeaves,
+      attendanceStats
+    ] = await Promise.all([
+      // Total staff count
+      User.countDocuments({ role: 'staff' }),
+      
+      // Active staff count
+      User.countDocuments({ role: 'staff', isActive: true }),
+      
+      // Today's attendance
+      Attendance.find({
+        date: { $gte: today, $lt: tomorrow }
+      }).populate('staff', 'firstName lastName department'),
+      
+      // Leaves active today
+      Leave.find({
+        status: 'approved',
+        startDate: { $lte: today },
+        endDate: { $gte: today }
+      }).populate('staff', 'firstName lastName'),
+      
+      // Leave applications from past 30 days
+      Leave.find({
+        createdAt: { $gte: thirtyDaysAgo }
+      }).sort({ createdAt: -1 }),
+      
+      // Recent leave applications (last 7 days)
+      Leave.find({
+        createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+      })
+        .populate('staff', 'firstName lastName email position department profileImage')
+        .populate('approvedBy', 'firstName lastName')
+        .sort({ createdAt: -1 })
+        .limit(10),
+      
+      // Monthly attendance statistics
+      calculateAttendanceStats(startOfMonth, endOfMonth)
+    ]);
+
+    // Calculate statistics
+    const todayPresent = todayAttendance.filter(a => a.status === 'present').length;
+    const todayLate = todayAttendance.filter(a => a.status === 'late').length;
+    const todayAbsent = todayAttendance.filter(a => a.status === 'absent').length;
+    
+    const activeLeavesToday = todayLeaves.length;
+    
+    // Process monthly leave data for chart
+    const monthlyLeaveData = processMonthlyLeaveData(monthlyLeaves, thirtyDaysAgo);
+    
+    // Calculate approval rate for past 30 days
+    const approvedLeaves = monthlyLeaves.filter(leave => leave.status === 'approved').length;
+    const pendingLeaves = monthlyLeaves.filter(leave => leave.status === 'pending').length;
+    const approvalRate = monthlyLeaves.length > 0 
+      ? Math.round((approvedLeaves / monthlyLeaves.length) * 100) 
+      : 0;
+
+    // Get staff hired in last 30 days
+    const recentHires = await User.countDocuments({
+      role: 'staff',
+      dateOfJoining: { $gte: thirtyDaysAgo }
+    });
+
+    // Get open disciplinary cases
+    const openCases = await Disciplinary.countDocuments({ 
+      status: { $in: ['open', 'under-review'] } 
+    });
+
+    res.json({
+      // Staff statistics
+      totalStaff,
+      activeStaff,
+      recentHires,
+      
+      // Leave statistics
+      activeLeaves: activeLeavesToday,
+      pendingLeaves,
+      approvalRate,
+      monthlyLeaves: monthlyLeaveData,
+      recentLeaves,
+      
+      // Attendance statistics
+      todayPresent,
+      todayLate,
+      todayAbsent,
+      todayOnLeave: activeLeavesToday,
       attendanceStats,
-      monthlyTrends,
-      recentActivities: recentActivities || []
+      
+      // Other statistics
+      openCases,
+      
+      // Calculated values for dashboard cards
+      todayAttendance: todayAttendance.length,
+      monthlyLeaveCount: monthlyLeaves.length
     });
   } catch (error) {
+    console.error('Dashboard stats error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -81,6 +142,7 @@ router.get('/users', auth, authorize('admin'), async (req, res) => {
     const users = await User.find(query)
       .select('-password')
       .populate('supervisor', 'firstName lastName')
+      .populate('department', 'name code')
       .sort({ createdAt: -1 });
 
     res.json(users);
@@ -307,57 +369,69 @@ async function generateEmployeeId() {
   return `EMP${year}${sequence.toString().padStart(3, '0')}`;
 }
 
-async function getMonthlyTrends() {
-  const sixMonthsAgo = new Date();
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+// Process monthly leave data for chart
+function processMonthlyLeaveData(leaves, thirtyDaysAgo) {
+  const dailyData = {};
   
-  const trends = [];
-  
-  for (let i = 5; i >= 0; i--) {
+  // Initialize last 30 days
+  for (let i = 0; i < 30; i++) {
     const date = new Date();
-    date.setMonth(date.getMonth() - i);
-    
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0);
-    
-    const [attendanceCount, leaveCount, disciplinaryCount] = await Promise.all([
-      Attendance.countDocuments({
-        date: { $gte: startDate, $lte: endDate }
-      }),
-      Leave.countDocuments({
-        createdAt: { $gte: startDate, $lte: endDate }
-      }),
-      Disciplinary.countDocuments({
-        createdAt: { $gte: startDate, $lte: endDate }
-      })
-    ]);
-    
-    trends.push({
-      month: date.toLocaleString('default', { month: 'short' }),
-      year,
-      attendance: attendanceCount,
-      leaves: leaveCount,
-      disciplinary: disciplinaryCount
-    });
+    date.setDate(date.getDate() - i);
+    const dateStr = date.toISOString().split('T')[0];
+    dailyData[dateStr] = { approved: 0, pending: 0, rejected: 0, total: 0 };
   }
-  
-  return trends;
+
+  // Count leaves by date and status
+  leaves.forEach(leave => {
+    const date = new Date(leave.createdAt).toISOString().split('T')[0];
+    if (dailyData[date]) {
+      if (leave.status === 'approved') dailyData[date].approved++;
+      else if (leave.status === 'pending') dailyData[date].pending++;
+      else if (leave.status === 'rejected') dailyData[date].rejected++;
+      dailyData[date].total++;
+    }
+  });
+
+  // Convert to array format for chart
+  return Object.keys(dailyData)
+    .sort()
+    .map(date => ({
+      date,
+      approved: dailyData[date].approved,
+      pending: dailyData[date].pending,
+      rejected: dailyData[date].rejected,
+      total: dailyData[date].total
+    }));
 }
 
-async function getRecentActivities() {
-  try {
-    const AuditLog = require('../models/AuditLog');
-    return await AuditLog.find()
-      .populate('user', 'firstName lastName role')
-      .sort({ timestamp: -1 })
-      .limit(10);
-  } catch (error) {
-    console.error('Error fetching activities:', error);
-    return [];
+// Calculate attendance statistics
+async function calculateAttendanceStats(startDate, endDate) {
+  const attendance = await Attendance.find({
+    date: { $gte: startDate, $lte: endDate }
+  });
+
+  const stats = {
+    present: attendance.filter(a => a.status === 'present').length,
+    absent: attendance.filter(a => a.status === 'absent').length,
+    late: attendance.filter(a => a.status === 'late').length,
+    onLeave: attendance.filter(a => a.status === 'leave').length,
+    total: attendance.length
+  };
+
+  // Calculate percentages
+  if (stats.total > 0) {
+    stats.presentPercentage = Math.round((stats.present / stats.total) * 100);
+    stats.absentPercentage = Math.round((stats.absent / stats.total) * 100);
+    stats.latePercentage = Math.round((stats.late / stats.total) * 100);
+    stats.leavePercentage = Math.round((stats.onLeave / stats.total) * 100);
+  } else {
+    stats.presentPercentage = 0;
+    stats.absentPercentage = 0;
+    stats.latePercentage = 0;
+    stats.leavePercentage = 0;
   }
+
+  return stats;
 }
 
 module.exports = router;

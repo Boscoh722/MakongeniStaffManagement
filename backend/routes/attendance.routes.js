@@ -3,14 +3,33 @@ const router = express.Router();
 const { auth, authorize } = require('../middleware/auth');
 const Attendance = require('../models/Attendance');
 const User = require('../models/User');
+const Leave = require('../models/Leave');
 
-// Mark attendance (Clerk/Supervisor/Admin)
+// Mark attendance - Add better validation
 router.post('/mark', auth, authorize('clerk', 'supervisor', 'admin'), async (req, res) => {
   try {
     const { staffId, date, status, checkInTime, checkOutTime, remarks } = req.body;
     
-    // Validate date is not in future
+    // Validate required fields
+    if (!staffId || !date || !status) {
+      return res.status(400).json({ 
+        error: 'Missing required fields: staffId, date, and status are required' 
+      });
+    }
+
+    // Validate staff exists
+    const staff = await User.findById(staffId);
+    if (!staff) {
+      return res.status(404).json({ error: 'Staff member not found' });
+    }
+
+    // Validate date format
     const attendanceDate = new Date(date);
+    if (isNaN(attendanceDate.getTime())) {
+      return res.status(400).json({ error: 'Invalid date format' });
+    }
+
+    // Validate date is not in future
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
@@ -18,65 +37,71 @@ router.post('/mark', auth, authorize('clerk', 'supervisor', 'admin'), async (req
       return res.status(400).json({ error: 'Cannot mark attendance for future dates' });
     }
 
+    // Normalize date to start of day for comparison
+    const normalizedDate = new Date(attendanceDate);
+    normalizedDate.setHours(0, 0, 0, 0);
+
     // Check if attendance already exists
     const existingAttendance = await Attendance.findOne({
       staff: staffId,
       date: {
-        $gte: new Date(attendanceDate.setHours(0, 0, 0, 0)),
-        $lt: new Date(attendanceDate.setHours(23, 59, 59, 999))
+        $gte: normalizedDate,
+        $lt: new Date(normalizedDate.getTime() + 24 * 60 * 60 * 1000)
       }
     });
 
+    let attendance;
     if (existingAttendance) {
-      // Update existing attendance
+      // Update existing
       existingAttendance.status = status;
       existingAttendance.checkInTime = checkInTime || existingAttendance.checkInTime;
       existingAttendance.checkOutTime = checkOutTime || existingAttendance.checkOutTime;
       existingAttendance.remarks = remarks;
       existingAttendance.markedBy = req.user._id;
       
-      // Calculate hours worked
+      // Calculate hours
       if (checkInTime && checkOutTime) {
         const hours = (new Date(checkOutTime) - new Date(checkInTime)) / (1000 * 60 * 60);
         existingAttendance.hoursWorked = hours;
       }
       
-      await existingAttendance.save();
-      return res.json(existingAttendance);
+      attendance = await existingAttendance.save();
+    } else {
+      // Create new
+      attendance = new Attendance({
+        staff: staffId,
+        date: normalizedDate,
+        status,
+        checkInTime,
+        checkOutTime,
+        remarks,
+        markedBy: req.user._id
+      });
+
+      // Calculate hours
+      if (checkInTime && checkOutTime) {
+        const hours = (new Date(checkOutTime) - new Date(checkInTime)) / (1000 * 60 * 60);
+        attendance.hoursWorked = hours;
+      }
+
+      await attendance.save();
     }
 
-    // Create new attendance
-    const attendance = new Attendance({
-      staff: staffId,
-      date: attendanceDate,
-      status,
-      checkInTime,
-      checkOutTime,
-      remarks,
-      markedBy: req.user._id
-    });
+    // Populate staff details for response
+    const populatedAttendance = await Attendance.findById(attendance._id)
+      .populate('staff', 'firstName lastName employeeId department')
+      .populate('markedBy', 'firstName lastName');
 
-    // Calculate hours worked
-    if (checkInTime && checkOutTime) {
-      const hours = (new Date(checkOutTime) - new Date(checkInTime)) / (1000 * 60 * 60);
-      attendance.hoursWorked = hours;
-    }
+    res.json(populatedAttendance);
 
-    await attendance.save();
-    
-    // Add audit trail
-    await createAuditLog(req.user, 'attendance', 'create', {
-      staffId,
-      date: attendanceDate,
-      status
-    });
-
-    res.status(201).json(attendance);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error('Mark attendance error:', error);
+    res.status(400).json({ 
+      error: error.message,
+      details: 'Check the data format and try again' 
+    });
   }
 });
-
 // Bulk mark attendance
 router.post('/bulk', auth, authorize('clerk', 'admin'), async (req, res) => {
   try {
@@ -192,7 +217,7 @@ router.get('/', auth, authorize('admin', 'supervisor', 'clerk'), async (req, res
   }
 });
 
-// Get attendance statistics
+// Get attendance statistics - ENHANCED FOR DASHBOARD
 router.get('/stats', auth, async (req, res) => {
   try {
     const { startDate, endDate, staffId } = req.query;
@@ -223,6 +248,31 @@ router.get('/stats', auth, async (req, res) => {
 
     const attendance = await Attendance.find(query);
     
+    // Calculate daily statistics for chart
+    const dailyStats = {};
+    attendance.forEach(record => {
+      const dateStr = record.date.toISOString().split('T')[0];
+      if (!dailyStats[dateStr]) {
+        dailyStats[dateStr] = {
+          present: 0,
+          absent: 0,
+          late: 0,
+          leave: 0,
+          total: 0
+        };
+      }
+      dailyStats[dateStr][record.status]++;
+      dailyStats[dateStr].total++;
+    });
+    
+    // Convert to array for chart
+    const chartData = Object.keys(dailyStats)
+      .sort()
+      .map(date => ({
+        date,
+        ...dailyStats[date]
+      }));
+    
     const stats = {
       totalDays: attendance.length,
       present: attendance.filter(a => a.status === 'present').length,
@@ -230,6 +280,7 @@ router.get('/stats', auth, async (req, res) => {
       leave: attendance.filter(a => a.status === 'leave').length,
       offDuty: attendance.filter(a => a.status === 'off-duty').length,
       late: attendance.filter(a => a.status === 'late').length,
+      chartData,
       averageHours: 0
     };
 
@@ -247,6 +298,32 @@ router.get('/stats', auth, async (req, res) => {
     stats.attendancePercentage = attendance.length > 0 
       ? ((workingDays / attendance.length) * 100).toFixed(2) 
       : 0;
+
+    // Get today's stats separately
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const todayAttendance = await Attendance.countDocuments({
+      date: { $gte: today, $lt: tomorrow }
+    });
+    
+    const todayPresent = await Attendance.countDocuments({
+      date: { $gte: today, $lt: tomorrow },
+      status: 'present'
+    });
+    
+    const todayAbsent = await Attendance.countDocuments({
+      date: { $gte: today, $lt: tomorrow },
+      status: 'absent'
+    });
+
+    stats.today = {
+      total: todayAttendance,
+      present: todayPresent,
+      absent: todayAbsent
+    };
 
     res.json(stats);
   } catch (error) {
@@ -333,6 +410,94 @@ router.put('/:id', auth, authorize('admin', 'clerk'), async (req, res) => {
   }
 });
 
+// Get dashboard attendance overview
+router.get('/dashboard/overview', auth, authorize('admin'), async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Get today's attendance
+    const todayAttendance = await Attendance.find({
+      date: { $gte: today, $lt: tomorrow }
+    }).populate('staff', 'firstName lastName department');
+
+    // Get monthly attendance for chart
+    const monthlyAttendance = await Attendance.find({
+      date: { $gte: thirtyDaysAgo }
+    });
+
+    // Process daily attendance for chart
+    const dailyAttendance = {};
+    monthlyAttendance.forEach(record => {
+      const dateStr = record.date.toISOString().split('T')[0];
+      if (!dailyAttendance[dateStr]) {
+        dailyAttendance[dateStr] = {
+          present: 0,
+          absent: 0,
+          late: 0,
+          leave: 0,
+          total: 0
+        };
+      }
+      dailyAttendance[dateStr][record.status]++;
+      dailyAttendance[dateStr].total++;
+    });
+
+    // Convert to array for chart
+    const chartData = Object.keys(dailyAttendance)
+      .sort()
+      .slice(-30) // Last 30 days
+      .map(date => ({
+        date,
+        present: dailyAttendance[date].present,
+        absent: dailyAttendance[date].absent,
+        late: dailyAttendance[date].late
+      }));
+
+    // Today's statistics
+    const todayStats = {
+      present: todayAttendance.filter(a => a.status === 'present').length,
+      absent: todayAttendance.filter(a => a.status === 'absent').length,
+      late: todayAttendance.filter(a => a.status === 'late').length,
+      leave: todayAttendance.filter(a => a.status === 'leave').length,
+      total: todayAttendance.length
+    };
+
+    // Monthly statistics
+    const monthlyStats = {
+      present: monthlyAttendance.filter(a => a.status === 'present').length,
+      absent: monthlyAttendance.filter(a => a.status === 'absent').length,
+      late: monthlyAttendance.filter(a => a.status === 'late').length,
+      leave: monthlyAttendance.filter(a => a.status === 'leave').length,
+      total: monthlyAttendance.length,
+      attendanceRate: monthlyAttendance.length > 0 
+        ? Math.round((monthlyAttendance.filter(a => a.status === 'present').length / monthlyAttendance.length) * 100)
+        : 0
+    };
+
+    res.json({
+      today: todayStats,
+      monthly: monthlyStats,
+      chartData,
+      recentAbsentees: todayAttendance
+        .filter(a => a.status === 'absent')
+        .slice(0, 5)
+        .map(a => ({
+          name: `${a.staff.firstName} ${a.staff.lastName}`,
+          department: a.staff.department,
+          reason: a.remarks || 'No reason provided'
+        }))
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Helper functions
 async function calculateMonthlyStats(attendance) {
   const stats = {
@@ -356,17 +521,21 @@ async function calculateMonthlyStats(attendance) {
 }
 
 async function createAuditLog(user, action, entity, details) {
-  const AuditLog = require('../models/AuditLog');
-  
-  const log = new AuditLog({
-    user: user._id,
-    action,
-    entity,
-    details,
-    timestamp: new Date()
-  });
-  
-  await log.save();
+  try {
+    const AuditLog = require('../models/AuditLog');
+    
+    const log = new AuditLog({
+      user: user._id,
+      action,
+      entity,
+      details,
+      timestamp: new Date()
+    });
+    
+    await log.save();
+  } catch (error) {
+    console.error('Audit log error:', error);
+  }
 }
 
 module.exports = router;

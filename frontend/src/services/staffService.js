@@ -7,12 +7,28 @@ export const staffService = {
   updateProfile: (id, data) => api.put(`/staff/profile/${id}`, data),
   addQualification: (id, data) => api.post(`/staff/qualifications/${id}`, data),
   
-  // Attendance
+  // Attendance - UPDATED
   getAttendance: (params) => api.get('/attendance', { params }),
-  markAttendance: (data) => api.post('/attendance/mark', data),
+  
+  // Fixed: Check if it's bulk or single attendance
+  markAttendance: (data) => {
+    // Check if data contains attendanceData array (bulk marking)
+    if (data.attendanceData && Array.isArray(data.attendanceData)) {
+      return api.post('/attendance/bulk', data);
+    } else {
+      // Single attendance marking
+      return api.post('/attendance/mark', data);
+    }
+  },
+  
+  // Alternative: Separate methods for bulk and single
+  markSingleAttendance: (data) => api.post('/attendance/mark', data),
+  markBulkAttendance: (data) => api.post('/attendance/bulk', data),
+  
   getMyAttendance: (params) => api.get('/attendance/my-attendance', { params }),
   getAttendanceStats: (params) => api.get('/attendance/stats', { params }),
   getMonthlySummary: (params) => api.get('/attendance/monthly-summary', { params }),
+  getAttendanceOverview: () => api.get('/attendance/dashboard/overview'),
   
   // Leaves
   applyLeave: (data) => api.post('/leaves/apply', data),
@@ -21,6 +37,7 @@ export const staffService = {
   updateLeaveStatus: (id, data) => api.put(`/leaves/${id}/status`, data),
   getLeaveStats: (staffId) => api.get(`/leaves/stats/${staffId}`),
   cancelLeave: (id) => api.put(`/leaves/${id}/cancel`),
+  getMonthlyLeaveStats: () => api.get('/leaves/monthly-stats'),
   
   // Disciplinary
   getDisciplinaryCases: () => api.get('/disciplinary'),
@@ -41,5 +58,12 @@ export const staffService = {
   generateReport: (type, params) => api.get(`/reports/${type}`, { params }),
   
   // Audit
-  getAuditLogs: (params) => api.get('/audit/logs', { params })
+  getAuditLogs: (params) => api.get('/audit/logs', { params }),
+  
+  // Departments
+  getDepartmentOptions: () => api.get('/departments/options'),
+  getDepartments: (params) => api.get('/departments', { params }),
+  createDepartment: (data) => api.post('/departments', data),
+  updateDepartment: (id, data) => api.put(`/departments/${id}`, data),
+  deleteDepartment: (id) => api.delete(`/departments/${id}`)
 };

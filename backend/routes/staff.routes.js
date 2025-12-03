@@ -20,12 +20,15 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
-// Get all staff (Admin, Supervisor, Clerk)
+// Get all staff route - Update to populate department
 router.get('/', auth, authorize('admin', 'supervisor', 'clerk'), async (req, res) => {
   try {
     const staff = await User.find({ role: 'staff', isActive: true })
       .select('-password')
-      .populate('supervisor', 'firstName lastName');
+      .populate('supervisor', 'firstName lastName')
+      .populate('department', 'name code') // Add this line to populate department
+      .sort({ firstName: 1 });
+    
     res.json(staff);
   } catch (error) {
     res.status(500).json({ error: error.message });
