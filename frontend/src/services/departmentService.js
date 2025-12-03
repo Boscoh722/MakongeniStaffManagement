@@ -1,3 +1,5 @@
+import api from './api';
+
 export const departmentService = {
   getDepartments: (params) => api.get('/departments', { params }),
   getDepartmentOptions: () => api.get('/departments/options'),

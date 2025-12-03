@@ -718,3 +718,4 @@ const EditStaffModal = ({ staff = {}, onClose, onSubmit, departments = [], loadi
 };
 
 export default StaffManagement;
+
