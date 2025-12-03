@@ -116,6 +116,18 @@ router.get('/leaves', auth, authorize('admin', 'supervisor', 'clerk'), async (re
     res.status(500).json({ error: error.message });
   }
 });
+router.get('/recent-activities', auth, async (req, res) => {
+  try {
+    const activities = await AuditLog.find()
+      .sort({ createdAt: -1 })
+      .limit(20); // Adjust number if needed
+
+    res.json(activities);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 // Generate disciplinary report
 router.get('/disciplinary', auth, authorize('admin', 'supervisor'), async (req, res) => {
@@ -1074,6 +1086,5 @@ async function generateLeavePDF(res, leaves, stats, filters) {
   doc.end();
 }
 
-// Add similar functions for other report types...
 
 module.exports = router;

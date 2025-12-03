@@ -16,6 +16,7 @@ import StaffManagement from './pages/admin/StaffManagement';
 import LeaveManagement from './pages/admin/LeaveManagement';
 import AttendanceTracking from './pages/admin/AttendanceTracking';
 import DisciplinaryManagement from './pages/admin/DisciplinaryManagement';
+import DepartmentManagement from './pages/admin/DepartmentManagement';
 
 // Supervisor Pages
 import SupervisorDashboard from './pages/supervisor/Dashboard';
@@ -52,6 +53,7 @@ function App() {
                 <Route path="leaves" element={<LeaveManagement />} />
                 <Route path="attendance" element={<AttendanceTracking />} />
                 <Route path="disciplinary" element={<DisciplinaryManagement />} />
+                <Route path="departments" element={<DepartmentManagement />} />
               </Route>
             </Route>
 

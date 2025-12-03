@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['admin', 'supervisor', 'staff', 'clerk'], default: 'staff' },
-  department: { type: String, required: true },
+  department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department', required: true },
   position: { type: String, required: true },
   dateOfJoining: { type: Date, default: Date.now },
   phoneNumber: String,

@@ -28,6 +28,7 @@ const adminRoutes = require('./routes/admin.routes');
 const emailRoutes = require('./routes/email.routes');
 const reportRoutes = require('./routes/report.routes');
 const auditRoutes = require('./routes/audit.routes');
+const departmentRoutes = require('./routes/department.routes');
 
 
 
@@ -40,6 +41,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/email', emailRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/audit', auditRoutes);
+app.use('/api/departments', departmentRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
