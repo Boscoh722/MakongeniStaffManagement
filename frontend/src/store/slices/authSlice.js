@@ -1,19 +1,33 @@
+// store/slices/authSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
-import toast from 'react-hot-toast';
 
+// Async thunk for login
 export const login = createAsyncThunk(
   'auth/login',
-  async ({ email, password }, { rejectWithValue }) => {
+  async (credentials, { rejectWithValue }) => {
     try {
-      const response = await api.post('/auth/login', { email, password });
-
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-
-      return response.data;
+      console.log('Login thunk called with:', credentials);
+      const response = await api.post('/auth/login', credentials);
+      console.log('Login API response:', response.data);
+      
+      if (response.data.token && response.data.user) {
+        // Set token in axios headers for future requests
+        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        
+        // Return the data
+        return response.data;
+      } else {
+        return rejectWithValue('Invalid response from server');
+      }
     } catch (error) {
-      return rejectWithValue(error.response?.data?.error || 'Login failed');
+      console.error('Login thunk error:', error.response?.data || error.message);
+      return rejectWithValue(
+        error.response?.data?.error || 
+        error.response?.data?.message || 
+        error.message || 
+        'Login failed'
+      );
     }
   }
 );
@@ -23,6 +37,7 @@ const authSlice = createSlice({
   initialState: {
     user: JSON.parse(localStorage.getItem('user')) || null,
     token: localStorage.getItem('token') || null,
+    isAuthenticated: !!localStorage.getItem('token'),
     loading: false,
     error: null,
   },
@@ -30,13 +45,19 @@ const authSlice = createSlice({
     logout: (state) => {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      delete api.defaults.headers.common['Authorization'];
       state.user = null;
       state.token = null;
-      toast.success('Logged out');
+      state.isAuthenticated = false;
+      state.error = null;
     },
     clearError: (state) => {
       state.error = null;
     },
+    setUser: (state, action) => {
+      state.user = action.payload;
+      localStorage.setItem('user', JSON.stringify(action.payload));
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -46,17 +67,27 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
+        state.isAuthenticated = true;
         state.user = action.payload.user;
         state.token = action.payload.token;
-        toast.success('Login successful!');
+        state.error = null;
+        
+        // Save to localStorage
+        localStorage.setItem('token', action.payload.token);
+        localStorage.setItem('user', JSON.stringify(action.payload.user));
+        
+        // Set axios headers
+        api.defaults.headers.common['Authorization'] = `Bearer ${action.payload.token}`;
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
-        toast.error(action.payload);
+        state.isAuthenticated = false;
+        state.user = null;
+        state.token = null;
+        state.error = action.payload || 'Login failed';
       });
-  },
+  }
 });
 
-export const { logout, clearError } = authSlice.actions;
+export const { logout, clearError, setUser } = authSlice.actions;
 export default authSlice.reducer;

@@ -7,7 +7,9 @@ import {
   XCircleIcon,
   CalendarIcon,
   ArrowRightIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
+  UsersIcon,
+  DocumentArrowDownIcon
 } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
 
@@ -96,21 +98,21 @@ const ClerkDashboard = () => {
       description: 'Browse all staff members',
       icon: UserGroupIcon,
       color: 'bg-blue-500',
-      link: '/clerk/staff'
+      link: '/clerk/viewstaff'
     },
     {
       title: 'Process Leaves',
       description: 'Review leave applications',
       icon: CalendarIcon,
       color: 'bg-yellow-500',
-      link: '/clerk/leaves'
+      link: '/clerk/processleave'
     },
     {
       title: 'Generate Reports',
       description: 'Create attendance reports',
       icon: DocumentTextIcon,
       color: 'bg-purple-500',
-      link: '/clerk/reports'
+      link: '/clerk/generatereports'
     }
   ];
 
@@ -124,7 +126,6 @@ const ClerkDashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Banner */}
       <div className="bg-gradient-to-r from-dark-green-600 to-dark-green-800 rounded-lg shadow p-6 text-white">
         <h1 className="text-2xl font-bold">Clerk Dashboard</h1>
         <p className="mt-2 opacity-90">
@@ -144,7 +145,6 @@ const ClerkDashboard = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((stat) => (
           <div key={stat.title} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -161,9 +161,7 @@ const ClerkDashboard = () => {
         ))}
       </div>
 
-      {/* Quick Actions & Pending Leaves */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Quick Actions */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Quick Actions</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -189,7 +187,6 @@ const ClerkDashboard = () => {
           </div>
         </div>
 
-        {/* Pending Leaves */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -214,7 +211,10 @@ const ClerkDashboard = () => {
           ) : (
             <div className="space-y-4">
               {pendingLeaves.map((leave) => (
-                <div key={leave._id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div
+                  key={leave._id}
+                  className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+                >
                   <div className="flex justify-between items-start">
                     <div>
                       <h4 className="font-medium text-gray-900 dark:text-white">
@@ -240,12 +240,11 @@ const ClerkDashboard = () => {
         </div>
       </div>
 
-      {/* Today's Attendance Summary */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
           Today's Attendance Summary
         </h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <SummaryCard label="Present" value={todayStats.present} color="blue" />
           <SummaryCard label="Absent" value={todayStats.absent} color="red" />

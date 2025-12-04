@@ -1,32 +1,78 @@
-import React from 'react';
+// components/auth/PrivateRoute.js
+import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
-const PrivateRoute = ({ allowedRoles = [] }) => {
-  const { user, token } = useSelector((state) => state.auth);
+const PrivateRoute = ({ allowedRoles }) => {
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const [checking, setChecking] = useState(true);
+  
+  useEffect(() => {
+    console.log('🔐 PrivateRoute Check:');
+    console.log('   Path:', window.location.pathname);
+    console.log('   Redux Auth:', isAuthenticated);
+    console.log('   User Role:', user?.role);
+    console.log('   Allowed Roles:', allowedRoles);
+    console.log('   localStorage Token:', localStorage.getItem('token') ? 'YES' : 'NO');
+    
+    // Sync Redux with localStorage on mount
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    
+    if (token && storedUser && !isAuthenticated) {
+      console.log('   ⚠️ Token in storage but Redux says not authenticated');
+      console.log('   This might be causing the redirect!');
+    }
+    
+    setChecking(false);
+  }, [isAuthenticated, user, allowedRoles]);
 
-  // Check if user is authenticated
-  if (!token || !user) {
-    return <Navigate to="/login" replace />;
+  if (checking) {
+    return <div className="flex items-center justify-center h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+    </div>;
   }
 
-  // Check if user has required role
-  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-    // Redirect to appropriate dashboard based on role
-    switch (user.role) {
+  // Check authentication using localStorage as fallback
+  const token = localStorage.getItem('token');
+  const storedUser = localStorage.getItem('user');
+  
+  if (!token || !storedUser) {
+    console.log('❌ No token or user in localStorage, redirecting to login');
+    return <Navigate to="/login" />;
+  }
+
+  // Parse user from localStorage
+  let parsedUser;
+  try {
+    parsedUser = JSON.parse(storedUser);
+  } catch (error) {
+    console.error('Failed to parse user from localStorage:', error);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    return <Navigate to="/login" />;
+  }
+
+  // Check role
+  if (allowedRoles && !allowedRoles.includes(parsedUser.role)) {
+    console.log(`⛔ Role not allowed. User: ${parsedUser.role}, Allowed: ${allowedRoles}`);
+    
+    // Redirect based on role
+    switch(parsedUser.role) {
       case 'admin':
-        return <Navigate to="/admin" replace />;
+        return <Navigate to="/admin" />;
       case 'supervisor':
-        return <Navigate to="/supervisor" replace />;
-      case 'staff':
-        return <Navigate to="/staff" replace />;
+        return <Navigate to="/supervisor" />;
       case 'clerk':
-        return <Navigate to="/clerk" replace />;
+        return <Navigate to="/clerk" />;
+      case 'staff':
+        return <Navigate to="/staff" />;
       default:
-        return <Navigate to="/login" replace />;
+        return <Navigate to="/login" />;
     }
   }
 
+  console.log('✅ Access granted to', window.location.pathname);
   return <Outlet />;
 };
 

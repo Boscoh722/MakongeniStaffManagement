@@ -4,10 +4,10 @@ import { Toaster } from 'react-hot-toast';
 import { Provider } from 'react-redux';
 import store from './store/store';
 
-// Layout Components
+// Layout
 import Layout from './components/layout/Layout';
 
-// Auth Pages
+// Auth
 import Login from './pages/auth/Login';
 
 // Admin Pages
@@ -29,11 +29,14 @@ import Profile from './pages/staff/Profile';
 import ApplyLeave from './pages/staff/ApplyLeave';
 import MyAttendance from './pages/staff/MyAttendance';
 
-// Clerk Pages
+// Clerk Pages (Capitalized Fix)
 import ClerkDashboard from './pages/clerk/Dashboard';
 import MarkAttendance from './pages/clerk/MarkAttendance';
+import ClerkViewStaff from './pages/clerk/ClerkViewStaff';
+import ClerkProcessLeave from './pages/clerk/ClerkProcessLeave';
+import ClerkGenerateReports from './pages/clerk/ClerkGenerateReports';
 
-// Shared Components
+// Shared
 import PrivateRoute from './components/auth/PrivateRoute';
 
 function App() {
@@ -42,10 +45,11 @@ function App() {
       <Router>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
           <Toaster position="top-right" />
+
           <Routes>
             <Route path="/login" element={<Login />} />
-            
-            {/* Admin Routes */}
+
+            {/* Admin */}
             <Route path="/admin" element={<PrivateRoute allowedRoles={['admin']} />}>
               <Route element={<Layout />}>
                 <Route index element={<Dashboard />} />
@@ -57,7 +61,7 @@ function App() {
               </Route>
             </Route>
 
-            {/* Supervisor Routes */}
+            {/* Supervisor */}
             <Route path="/supervisor" element={<PrivateRoute allowedRoles={['supervisor']} />}>
               <Route element={<Layout />}>
                 <Route index element={<SupervisorDashboard />} />
@@ -66,7 +70,7 @@ function App() {
               </Route>
             </Route>
 
-            {/* Staff Routes */}
+            {/* Staff */}
             <Route path="/staff" element={<PrivateRoute allowedRoles={['staff']} />}>
               <Route element={<Layout />}>
                 <Route index element={<StaffDashboard />} />
@@ -76,14 +80,18 @@ function App() {
               </Route>
             </Route>
 
-            {/* Clerk Routes */}
+            {/* Clerk */}
             <Route path="/clerk" element={<PrivateRoute allowedRoles={['clerk']} />}>
               <Route element={<Layout />}>
                 <Route index element={<ClerkDashboard />} />
                 <Route path="attendance" element={<MarkAttendance />} />
+                <Route path="viewstaff" element={<ClerkViewStaff />} />
+                <Route path="processleave" element={<ClerkProcessLeave />} />
+                <Route path="generatereports" element={<ClerkGenerateReports />} />
               </Route>
             </Route>
 
+            Redirects
             <Route path="/" element={<Navigate to="/login" />} />
             <Route path="*" element={<Navigate to="/login" />} />
           </Routes>
