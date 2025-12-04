@@ -28,8 +28,9 @@ import StaffDashboard from './pages/staff/Dashboard';
 import Profile from './pages/staff/Profile';
 import ApplyLeave from './pages/staff/ApplyLeave';
 import MyAttendance from './pages/staff/MyAttendance';
+import DisciplinaryAppeal from './pages/staff/DisciplinaryAppeal';
 
-// Clerk Pages (Capitalized Fix)
+// Clerk Pages 
 import ClerkDashboard from './pages/clerk/Dashboard';
 import MarkAttendance from './pages/clerk/MarkAttendance';
 import ClerkViewStaff from './pages/clerk/ClerkViewStaff';
@@ -77,6 +78,7 @@ function App() {
                 <Route path="profile" element={<Profile />} />
                 <Route path="apply-leave" element={<ApplyLeave />} />
                 <Route path="attendance" element={<MyAttendance />} />
+                <Route path="disciplinary-appeal" element={<DisciplinaryAppeal />} />
               </Route>
             </Route>
 

@@ -27,40 +27,42 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     
-    const user = await User.findOne({ email, isActive: true });
+    const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
-
+    
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
-
+    
+    if (!user.isActive) {
+      return res.status(401).json({ error: 'Account is deactivated' });
+    }
+    
     const token = jwt.sign(
       { userId: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '24h' }
     );
-
+    
+    // POPULATE DEPARTMENT BEFORE RETURNING USER
+    await user.populate('department', 'name code');
+    
+    const userData = user.toObject();
+    delete userData.password;
+    
     res.json({
-      user: {
-        _id: user._id,
-        employeeId: user.employeeId,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        role: user.role,
-        department: user.department,
-        position: user.position
-      },
-      token
+      token,
+      user: userData,
+      message: 'Login successful'
     });
+    
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
-
 // Get current user
 router.get('/me', auth, async (req, res) => {
   res.json(req.user);

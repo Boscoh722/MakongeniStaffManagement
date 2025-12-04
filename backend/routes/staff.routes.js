@@ -41,13 +41,13 @@ router.get('/profile/:id', auth, async (req, res) => {
     const user = await User.findById(req.params.id)
       .select('-password')
       .populate('supervisor', 'firstName lastName')
+      .populate('department', 'name code') 
       .populate('qualifications');
     
     if (!user) {
       return res.status(404).json({ error: 'Staff not found' });
     }
 
-    // Check permissions
     if (req.user.role === 'staff' && req.user._id.toString() !== user._id.toString()) {
       return res.status(403).json({ error: 'Access denied' });
     }
