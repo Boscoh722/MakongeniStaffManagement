@@ -20,7 +20,10 @@ import DepartmentManagement from './pages/admin/DepartmentManagement';
 
 // Supervisor Pages
 import SupervisorDashboard from './pages/supervisor/Dashboard';
-import StaffOverview from './pages/supervisor/StaffOverview';
+import SupervisorLeaves from './pages/supervisor/Leaves';
+import SupervisorStaff from './pages/supervisor/Staff';
+import SupervisorAttendance from './pages/supervisor/SupervisorAttendance';
+import SendNotices from './pages/supervisor/SendNotices';
 import LeaveApproval from './pages/supervisor/LeaveApproval';
 
 // Staff Pages
@@ -66,8 +69,11 @@ function App() {
             <Route path="/supervisor" element={<PrivateRoute allowedRoles={['supervisor']} />}>
               <Route element={<Layout />}>
                 <Route index element={<SupervisorDashboard />} />
-                <Route path="staff" element={<StaffOverview />} />
-                <Route path="leaves" element={<LeaveApproval />} />
+                <Route path="staff" element={<SupervisorStaff />} />
+                <Route path="leaves" element={<SupervisorLeaves />} />
+                <Route path="attendance" element={<SupervisorAttendance />} />
+                <Route path="notices" element={<SendNotices />} />
+                <Route path="leave-approval/:id" element={<LeaveApproval />} />
               </Route>
             </Route>
 
