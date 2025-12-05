@@ -10,7 +10,10 @@ import {
   UserIcon,
   FunnelIcon,
   MagnifyingGlassIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  DocumentTextIcon,
+  ExclamationTriangleIcon,
+  InformationCircleIcon
 } from '@heroicons/react/24/outline';
 
 const SupervisorLeaves = () => {
@@ -141,11 +144,16 @@ const SupervisorLeaves = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'approved': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'rejected': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-      case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-      case 'cancelled': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+      case 'approved': 
+        return 'bg-gradient-to-r from-mustard-100 to-mustard-200 text-mustard-800 dark:from-mustard-900/50 dark:to-mustard-800/50 dark:text-mustard-300';
+      case 'rejected': 
+        return 'bg-gradient-to-r from-scarlet-100 to-scarlet-200 text-scarlet-800 dark:from-scarlet-900/50 dark:to-scarlet-800/50 dark:text-scarlet-300';
+      case 'pending': 
+        return 'bg-gradient-to-r from-royal-100 to-royal-200 text-royal-800 dark:from-royal-900/50 dark:to-royal-800/50 dark:text-royal-300';
+      case 'cancelled': 
+        return 'bg-gradient-to-r from-neutral-100 to-neutral-200 text-neutral-800 dark:from-neutral-900/50 dark:to-neutral-800/50 dark:text-neutral-300';
+      default: 
+        return 'bg-gradient-to-r from-neutral-100 to-neutral-200 text-neutral-800 dark:from-neutral-900/50 dark:to-neutral-800/50 dark:text-neutral-300';
     }
   };
 
@@ -154,7 +162,7 @@ const SupervisorLeaves = () => {
       case 'approved': return <CheckCircleIcon className="h-4 w-4" />;
       case 'rejected': return <XCircleIcon className="h-4 w-4" />;
       case 'pending': return <ClockIcon className="h-4 w-4" />;
-      default: return <ClockIcon className="h-4 w-4" />;
+      default: return <InformationCircleIcon className="h-4 w-4" />;
     }
   };
 
@@ -211,99 +219,127 @@ const SupervisorLeaves = () => {
     });
   };
 
+  const handleRefresh = async () => {
+    await fetchLeaves();
+    toast.success('Leave list refreshed');
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6 bg-gradient-to-br from-royal-50 via-mustard-50 to-scarlet-50 dark:from-neutral-900 dark:via-royal-900 dark:to-scarlet-900 min-h-screen font-sans">
       {/* Header */}
-      <div className="bg-gradient-to-r from-dark-green-600 to-dark-green-800 rounded-lg shadow p-6 text-white">
+      <div className="bg-gradient-to-r from-mustard-500 via-scarlet-500 to-royal-500 rounded-2xl shadow-xl p-6 text-white">
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-2xl font-bold">Leave Management</h1>
             <p className="mt-2 opacity-90">
               Review and manage leave applications from your team
             </p>
+            <div className="mt-4 flex items-center space-x-4 text-sm">
+              <span className="flex items-center">
+                <CalendarIcon className="h-4 w-4 mr-2" />
+                {leaves.length} total applications
+              </span>
+              <span className="flex items-center">
+                <ClockIcon className="h-4 w-4 mr-2" />
+                {stats.pending} pending approval
+              </span>
+            </div>
           </div>
-          <CalendarIcon className="h-10 w-10 opacity-80" />
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={handleRefresh}
+              className="p-2 bg-white/20 hover:bg-white/30 rounded-xl transition-all duration-200"
+            >
+              <ArrowPathIcon className="h-5 w-5" />
+            </button>
+            <CalendarIcon className="h-12 w-12 opacity-80" />
+          </div>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-royal-100 dark:border-royal-900/30">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Leaves</p>
-              <p className="text-2xl font-bold mt-1">{stats.total}</p>
+              <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Total Leaves</p>
+              <p className="text-2xl font-bold text-neutral-900 dark:text-white mt-1">{stats.total}</p>
             </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
-              <CalendarIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            <div className="p-3 bg-gradient-to-r from-royal-100 to-royal-200 dark:from-royal-900/50 dark:to-royal-800/50 rounded-xl">
+              <CalendarIcon className="h-6 w-6 text-royal-600 dark:text-royal-400" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-royal-100 dark:border-royal-900/30">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Pending</p>
-              <p className="text-2xl font-bold mt-1 text-yellow-600 dark:text-yellow-400">{stats.pending}</p>
+              <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Pending</p>
+              <p className="text-2xl font-bold text-royal-600 dark:text-royal-400 mt-1">{stats.pending}</p>
             </div>
-            <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-full">
-              <ClockIcon className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+            <div className="p-3 bg-gradient-to-r from-royal-100 to-royal-200 dark:from-royal-900/50 dark:to-royal-800/50 rounded-xl">
+              <ClockIcon className="h-6 w-6 text-royal-600 dark:text-royal-400" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-mustard-100 dark:border-mustard-900/30">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Approved</p>
-              <p className="text-2xl font-bold mt-1 text-green-600 dark:text-green-400">{stats.approved}</p>
+              <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Approved</p>
+              <p className="text-2xl font-bold text-mustard-600 dark:text-mustard-400 mt-1">{stats.approved}</p>
             </div>
-            <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full">
-              <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
+            <div className="p-3 bg-gradient-to-r from-mustard-100 to-mustard-200 dark:from-mustard-900/50 dark:to-mustard-800/50 rounded-xl">
+              <CheckCircleIcon className="h-6 w-6 text-mustard-600 dark:text-mustard-400" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-scarlet-100 dark:border-scarlet-900/30">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Rejected</p>
-              <p className="text-2xl font-bold mt-1 text-red-600 dark:text-red-400">{stats.rejected}</p>
+              <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Rejected</p>
+              <p className="text-2xl font-bold text-scarlet-600 dark:text-scarlet-400 mt-1">{stats.rejected}</p>
             </div>
-            <div className="p-3 bg-red-100 dark:bg-red-900 rounded-full">
-              <XCircleIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
+            <div className="p-3 bg-gradient-to-r from-scarlet-100 to-scarlet-200 dark:from-scarlet-900/50 dark:to-scarlet-800/50 rounded-xl">
+              <XCircleIcon className="h-6 w-6 text-scarlet-600 dark:text-scarlet-400" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Filters</h2>
-          <div className="flex items-center space-x-2">
+      <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-mustard-100 dark:border-mustard-900/30">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center">
+            <FunnelIcon className="h-5 w-5 text-mustard-500 mr-2" />
+            Filters
+          </h2>
+          <div className="flex items-center space-x-4">
+            <div className="text-sm text-neutral-600 dark:text-neutral-400">
+              Showing {filteredLeaves.length} of {leaves.length} leaves
+            </div>
             <button
               onClick={resetFilters}
-              className="flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              className="flex items-center text-sm text-scarlet-600 hover:text-scarlet-700 dark:text-scarlet-400 dark:hover:text-scarlet-300 px-3 py-1.5 rounded-lg hover:bg-scarlet-50 dark:hover:bg-scarlet-900/30 transition-all duration-200"
             >
-              <ArrowPathIcon className="h-4 w-4 mr-1" />
+              <ArrowPathIcon className="h-4 w-4 mr-1.5" />
               Reset
             </button>
-            <FunnelIcon className="h-5 w-5 text-gray-500" />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
               Search
             </label>
             <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-mustard-500" />
               <input
                 type="text"
                 placeholder="Search by name or ID..."
-                className="pl-10 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-dark-green-500 focus:border-transparent"
+                className="pl-10 w-full px-4 py-2.5 border border-mustard-200 dark:border-mustard-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-mustard-500 focus:border-transparent bg-white/70 dark:bg-neutral-900/70 text-neutral-900 dark:text-white placeholder-royal-400 dark:placeholder-royal-500 transition-all duration-200 hover:border-mustard-300 dark:hover:border-mustard-700"
                 value={filters.search}
                 onChange={(e) => setFilters({...filters, search: e.target.value})}
               />
@@ -311,11 +347,11 @@ const SupervisorLeaves = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
               Status
             </label>
             <select
-              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-dark-green-500 focus:border-transparent"
+              className="w-full px-4 py-2.5 border border-mustard-200 dark:border-mustard-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-mustard-500 focus:border-transparent bg-white/70 dark:bg-neutral-900/70 text-neutral-900 dark:text-white transition-all duration-200 hover:border-mustard-300 dark:hover:border-mustard-700"
               value={filters.status}
               onChange={(e) => setFilters({...filters, status: e.target.value})}
             >
@@ -328,11 +364,11 @@ const SupervisorLeaves = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
               Leave Type
             </label>
             <select
-              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-dark-green-500 focus:border-transparent"
+              className="w-full px-4 py-2.5 border border-mustard-200 dark:border-mustard-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-mustard-500 focus:border-transparent bg-white/70 dark:bg-neutral-900/70 text-neutral-900 dark:text-white transition-all duration-200 hover:border-mustard-300 dark:hover:border-mustard-700"
               value={filters.leaveType}
               onChange={(e) => setFilters({...filters, leaveType: e.target.value})}
             >
@@ -344,24 +380,24 @@ const SupervisorLeaves = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
               From Date
             </label>
             <input
               type="date"
-              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-dark-green-500 focus:border-transparent"
+              className="w-full px-4 py-2.5 border border-mustard-200 dark:border-mustard-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-mustard-500 focus:border-transparent bg-white/70 dark:bg-neutral-900/70 text-neutral-900 dark:text-white transition-all duration-200 hover:border-mustard-300 dark:hover:border-mustard-700"
               value={filters.startDate}
               onChange={(e) => setFilters({...filters, startDate: e.target.value})}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
               To Date
             </label>
             <input
               type="date"
-              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-dark-green-500 focus:border-transparent"
+              className="w-full px-4 py-2.5 border border-mustard-200 dark:border-mustard-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-mustard-500 focus:border-transparent bg-white/70 dark:bg-neutral-900/70 text-neutral-900 dark:text-white transition-all duration-200 hover:border-mustard-300 dark:hover:border-mustard-700"
               value={filters.endDate}
               onChange={(e) => setFilters({...filters, endDate: e.target.value})}
             />
@@ -370,102 +406,107 @@ const SupervisorLeaves = () => {
       </div>
 
       {/* Leaves Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold">Leave Applications</h2>
+      <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg border border-mustard-100 dark:border-mustard-900/30 overflow-hidden">
+        <div className="px-6 py-4 border-b border-mustard-100 dark:border-mustard-900/30">
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">Leave Applications</h2>
         </div>
 
         {loading ? (
           <div className="p-8 text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-dark-green-600"></div>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">Loading leaves...</p>
+            <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-mustard-600"></div>
+            <p className="mt-3 text-neutral-600 dark:text-neutral-400">Loading leave applications...</p>
           </div>
         ) : filteredLeaves.length === 0 ? (
           <div className="p-8 text-center">
-            <CalendarIcon className="h-12 w-12 mx-auto text-gray-400" />
-            <p className="mt-2 text-gray-600 dark:text-gray-400">No leave applications found</p>
+            <CalendarIcon className="h-16 w-16 mx-auto text-mustard-400 dark:text-mustard-500 mb-4" />
+            <p className="text-neutral-600 dark:text-neutral-400">No leave applications found</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-500 mt-1">
+              Try adjusting your filters or check back later
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-900">
+            <table className="min-w-full divide-y divide-mustard-100 dark:divide-mustard-900/30">
+              <thead className="bg-gradient-to-r from-royal-50 to-royal-100/50 dark:from-royal-900/20 dark:to-royal-900/10">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
                     Staff Member
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
                     Leave Type
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
                     Date Range
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
                     Days
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white/50 dark:bg-neutral-800/50 divide-y divide-mustard-100 dark:divide-mustard-900/30">
                 {filteredLeaves.map((leave) => (
-                  <tr key={leave._id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
+                  <tr key={leave._id} className="hover:bg-gradient-to-r from-mustard-50/50 to-mustard-100/30 dark:hover:from-mustard-900/10 dark:hover:to-mustard-800/10 transition-all duration-200">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                          <UserIcon className="h-6 w-6 text-gray-600 dark:text-gray-400" />
+                        <div className="flex-shrink-0 h-10 w-10 bg-gradient-to-r from-mustard-100 to-scarlet-100 dark:from-mustard-900/30 dark:to-scarlet-900/30 rounded-full flex items-center justify-center">
+                          <UserIcon className="h-6 w-6 text-mustard-600 dark:text-mustard-400" />
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          <div className="text-sm font-medium text-neutral-900 dark:text-white">
                             {leave.staff?.firstName} {leave.staff?.lastName}
                           </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                          <div className="text-sm text-royal-600 dark:text-royal-400">
                             {leave.staff?.employeeId}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                      <span className="px-3 py-1.5 text-xs rounded-full bg-gradient-to-r from-royal-100 to-royal-200 text-royal-800 dark:from-royal-900/50 dark:to-royal-800/50 dark:text-royal-300 font-medium">
                         {leave.leaveType}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 dark:text-white">
+                      <div className="text-sm text-neutral-900 dark:text-white">
                         {formatDate(leave.startDate)} - {formatDate(leave.endDate)}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900 dark:text-white">
                       {calculateDays(leave.startDate, leave.endDate)} days
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(leave.status)}`}>
+                      <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium ${getStatusColor(leave.status)}`}>
                         {getStatusIcon(leave.status)}
-                        <span className="ml-1 capitalize">{leave.status}</span>
+                        <span className="ml-1.5 capitalize">{leave.status}</span>
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       {leave.status === 'pending' && (
-                        <div className="flex space-x-2">
+                        <div className="flex space-x-3">
                           <button
                             onClick={() => openActionModal(leave, 'approved')}
-                            className="text-green-600 hover:text-green-900 dark:hover:text-green-400"
+                            className="px-3 py-1.5 bg-gradient-to-r from-mustard-100 to-mustard-200 text-mustard-700 dark:from-mustard-900/50 dark:to-mustard-800/50 dark:text-mustard-300 rounded-lg hover:shadow-md transition-all duration-200 font-medium"
                           >
                             Approve
                           </button>
                           <button
                             onClick={() => openActionModal(leave, 'rejected')}
-                            className="text-red-600 hover:text-red-900 dark:hover:text-red-400"
+                            className="px-3 py-1.5 bg-gradient-to-r from-scarlet-100 to-scarlet-200 text-scarlet-700 dark:from-scarlet-900/50 dark:to-scarlet-800/50 dark:text-scarlet-300 rounded-lg hover:shadow-md transition-all duration-200 font-medium"
                           >
                             Reject
                           </button>
                         </div>
                       )}
                       {leave.status !== 'pending' && (
-                        <span className="text-gray-500 dark:text-gray-400">No actions</span>
+                        <span className="text-neutral-500 dark:text-neutral-400 px-3 py-1.5 bg-gradient-to-r from-neutral-100 to-neutral-200 dark:from-neutral-900/30 dark:to-neutral-800/30 rounded-lg">
+                          No actions
+                        </span>
                       )}
                     </td>
                   </tr>
@@ -478,37 +519,45 @@ const SupervisorLeaves = () => {
 
       {/* Action Modal */}
       {showActionModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full">
+        <div className="fixed inset-0 bg-neutral-900/75 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white/95 dark:bg-neutral-800/95 backdrop-blur-sm rounded-2xl shadow-2xl max-w-md w-full border border-mustard-100 dark:border-mustard-900/30">
             <div className="p-6">
-              <h3 className="text-lg font-semibold mb-4">
-                {actionData.status === 'approved' ? 'Approve Leave' : 'Reject Leave'}
-              </h3>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                  {actionData.status === 'approved' ? 'Approve Leave' : 'Reject Leave'}
+                </h3>
+                {actionData.status === 'approved' ? (
+                  <CheckCircleIcon className="h-6 w-6 text-mustard-500" />
+                ) : (
+                  <XCircleIcon className="h-6 w-6 text-scarlet-500" />
+                )}
+              </div>
               
               {selectedLeave && (
-                <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                  <p className="font-medium">{selectedLeave.staff?.firstName} {selectedLeave.staff?.lastName}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {selectedLeave.leaveType} - {calculateDays(selectedLeave.startDate, selectedLeave.endDate)} days
+                <div className="mb-6 p-4 bg-gradient-to-r from-royal-50 to-royal-100/50 dark:from-royal-900/20 dark:to-royal-900/10 rounded-xl border border-royal-200 dark:border-royal-800">
+                  <p className="font-medium text-neutral-900 dark:text-white">{selectedLeave.staff?.firstName} {selectedLeave.staff?.lastName}</p>
+                  <p className="text-sm text-royal-600 dark:text-royal-400">
+                    {selectedLeave.leaveType} • {calculateDays(selectedLeave.startDate, selectedLeave.endDate)} days
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-2">
                     {formatDate(selectedLeave.startDate)} to {formatDate(selectedLeave.endDate)}
                   </p>
                   {selectedLeave.reason && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                      <span className="font-medium">Reason:</span> {selectedLeave.reason}
-                    </p>
+                    <div className="mt-3 pt-3 border-t border-royal-200 dark:border-royal-800">
+                      <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Reason:</p>
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">{selectedLeave.reason}</p>
+                    </div>
                   )}
                 </div>
               )}
 
               {actionData.status === 'rejected' && (
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                     Rejection Reason (Optional)
                   </label>
                   <textarea
-                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-dark-green-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-mustard-200 dark:border-mustard-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-mustard-500 focus:border-transparent bg-white/70 dark:bg-neutral-900/70 text-neutral-900 dark:text-white placeholder-royal-400 dark:placeholder-royal-500 transition-all duration-200 hover:border-mustard-300 dark:hover:border-mustard-700"
                     rows="3"
                     placeholder="Enter reason for rejection..."
                     value={actionData.rejectionReason}
@@ -517,34 +566,54 @@ const SupervisorLeaves = () => {
                 </div>
               )}
 
-              <div className="flex justify-end space-x-3 mt-6">
+              <div className="flex justify-end space-x-3 pt-6 border-t border-mustard-100 dark:border-mustard-900/30">
                 <button
                   onClick={() => {
                     setShowActionModal(false);
                     setSelectedLeave(null);
                     setActionData({ status: '', rejectionReason: '' });
                   }}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+                  className="px-4 py-2.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-gradient-to-r from-neutral-100 to-neutral-200 dark:hover:from-neutral-900/30 dark:hover:to-neutral-800/30 rounded-xl transition-all duration-200 border border-mustard-200 dark:border-mustard-800"
                   disabled={updating}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleUpdateStatus}
-                  className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
+                  className={`px-4 py-2.5 text-sm font-medium text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 ${
                     actionData.status === 'approved' 
-                      ? 'bg-green-600 hover:bg-green-700' 
-                      : 'bg-red-600 hover:bg-red-700'
+                      ? 'bg-gradient-to-r from-mustard-500 to-mustard-600 hover:from-mustard-600 hover:to-mustard-700' 
+                      : 'bg-gradient-to-r from-scarlet-500 to-scarlet-600 hover:from-scarlet-600 hover:to-scarlet-700'
                   }`}
                   disabled={updating}
                 >
-                  {updating ? 'Processing...' : actionData.status === 'approved' ? 'Approve' : 'Reject'}
+                  {updating ? (
+                    <span className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Processing...
+                    </span>
+                  ) : actionData.status === 'approved' ? 'Approve Leave' : 'Reject Leave'}
                 </button>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Footer Link */}
+      <div className="text-center pt-4">
+        <a
+          href="https://makongeniwelfare.vercel.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center text-sm text-royal-600 hover:text-royal-700 dark:text-royal-400 dark:hover:text-royal-300"
+        >
+          Community Welfare Portal
+          <svg className="ml-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </a>
+      </div>
     </div>
   );
 };

@@ -7,7 +7,14 @@ import {
   PaperAirplaneIcon,
   ClockIcon,
   CheckCircleIcon,
-  XCircleIcon
+  XCircleIcon,
+  ArrowUpTrayIcon,
+  InformationCircleIcon,
+  DocumentArrowUpIcon,
+  ChevronRightIcon,
+  PlusIcon,
+  MinusIcon,
+  ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -101,12 +108,12 @@ const ApplyLeave = () => {
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'approved': return 'text-green-600 dark:text-green-400';
-      case 'rejected': return 'text-red-600 dark:text-red-400';
-      case 'pending': return 'text-yellow-600 dark:text-yellow-400';
-      default: return 'text-gray-600 dark:text-gray-400';
-    }
+    const colors = {
+      approved: 'text-mustard-600 dark:text-mustard-400 bg-mustard-100 dark:bg-mustard-900/50 border-mustard-200 dark:border-mustard-800',
+      rejected: 'text-scarlet-600 dark:text-scarlet-400 bg-scarlet-100 dark:bg-scarlet-900/50 border-scarlet-200 dark:border-scarlet-800',
+      pending: 'text-royal-600 dark:text-royal-400 bg-royal-100 dark:bg-royal-900/50 border-royal-200 dark:border-royal-800',
+    };
+    return colors[status] || colors.pending;
   };
 
   const getStatusIcon = (status) => {
@@ -114,78 +121,119 @@ const ApplyLeave = () => {
       case 'approved': return <CheckCircleIcon className="h-5 w-5" />;
       case 'rejected': return <XCircleIcon className="h-5 w-5" />;
       case 'pending': return <ClockIcon className="h-5 w-5" />;
-      default: return null;
+      default: return <ClockIcon className="h-5 w-5" />;
     }
   };
 
   const leaveTypes = [
-    { value: 'annual', label: 'Annual Leave', description: 'Regular vacation leave' },
-    { value: 'sick', label: 'Sick Leave', description: 'Medical leave with certificate' },
-    { value: 'maternity', label: 'Maternity Leave', description: 'For expecting mothers' },
-    { value: 'paternity', label: 'Paternity Leave', description: 'For new fathers' },
-    { value: 'compassionate', label: 'Compassionate Leave', description: 'Bereavement leave' },
-    { value: 'study', label: 'Study Leave', description: 'For educational purposes' }
+    { value: 'annual', label: 'Annual Leave', description: 'Regular vacation leave', color: 'from-mustard-50 to-mustard-100/50', border: 'border-mustard-200' },
+    { value: 'sick', label: 'Sick Leave', description: 'Medical leave with certificate', color: 'from-scarlet-50 to-scarlet-100/50', border: 'border-scarlet-200' },
+    { value: 'maternity', label: 'Maternity Leave', description: 'For expecting mothers', color: 'from-royal-50 to-royal-100/50', border: 'border-royal-200' },
+    { value: 'paternity', label: 'Paternity Leave', description: 'For new fathers', color: 'from-royal-50 to-royal-100/50', border: 'border-royal-200' },
+    { value: 'compassionate', label: 'Compassionate Leave', description: 'Bereavement leave', color: 'from-neutral-50 to-neutral-100/50', border: 'border-neutral-200' },
+    { value: 'study', label: 'Study Leave', description: 'For educational purposes', color: 'from-royal-50 to-royal-100/50', border: 'border-royal-200' }
   ];
 
+  const getLeaveTypeColor = (type) => {
+    const typeConfig = leaveTypes.find(t => t.value === type);
+    return typeConfig ? typeConfig.color : 'from-neutral-50 to-neutral-100/50';
+  };
+
+  const getLeaveTypeBorder = (type) => {
+    const typeConfig = leaveTypes.find(t => t.value === type);
+    return typeConfig ? typeConfig.border : 'border-neutral-200';
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6 bg-gradient-to-br from-royal-50 via-mustard-50 to-scarlet-50 dark:from-neutral-900 dark:via-royal-900 dark:to-scarlet-900 min-h-screen font-sans">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Apply for Leave</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">Apply for Leave</h1>
+          <p className="text-neutral-600 dark:text-neutral-400 mt-1">
             Submit a leave application for approval
           </p>
+        </div>
+        <div className="flex items-center text-sm text-royal-600 dark:text-royal-400">
+          <CalendarIcon className="h-5 w-5 mr-2" />
+          Last updated: {new Date().toLocaleDateString()}
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Leave Balance */}
-        <div className="lg:col-span-1">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        <div className="lg:col-span-1 space-y-6">
+          <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-mustard-100 dark:border-mustard-900/30">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center">
+              <DocumentTextIcon className="h-5 w-5 mr-2 text-mustard-500" />
               Leave Balance
             </h3>
             
             <div className="space-y-4">
               {leaveTypes.map((type) => (
-                <div key={type.value} className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div key={type.value} 
+                  className={`p-4 rounded-xl border dark:border-neutral-700/50 ${type.color} dark:${type.color.replace('50', '900/30').replace('100/50', '900/20')}`}>
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{type.label}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {leaveBalance[type.value]?.remaining || 0} days remaining
+                      <p className="font-medium text-neutral-900 dark:text-white">{type.label}</p>
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
+                        {type.description}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-dark-green-600 dark:text-dark-green-400">
-                        {leaveBalance[type.value]?.total || 0}
+                      <p className="text-2xl font-bold text-mustard-700 dark:text-mustard-300">
+                        {leaveBalance[type.value]?.remaining || 0}
                       </p>
-                      <p className="text-xs text-gray-500">total days</p>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                        of {leaveBalance[type.value]?.total || 0} days
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <div className="h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full ${type.color.split(' ')[0]} ${type.color.split(' ')[1]}`}
+                        style={{ width: `${Math.min(((leaveBalance[type.value]?.remaining || 0) / (leaveBalance[type.value]?.total || 1)) * 100, 100)}%` }}
+                      />
                     </div>
                   </div>
                 </div>
               ))}
             </div>
+          </div>
 
-            <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-              <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2">
-                Important Notes
-              </h4>
-              <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
-                <li>• Apply for leave at least 3 days in advance</li>
-                <li>• Sick leave requires medical certificate</li>
-                <li>• Maternity leave: 90 days maximum</li>
-                <li>• Study leave: Proof of enrollment required</li>
-              </ul>
-            </div>
+          {/* Important Notes */}
+          <div className="bg-gradient-to-r from-royal-50 to-royal-100/50 dark:from-royal-900/30 dark:to-royal-900/20 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-royal-200 dark:border-royal-800">
+            <h4 className="font-medium text-neutral-900 dark:text-white mb-4 flex items-center">
+              <InformationCircleIcon className="h-5 w-5 mr-2 text-royal-500" />
+              Important Notes
+            </h4>
+            <ul className="text-sm text-neutral-700 dark:text-neutral-300 space-y-2">
+              <li className="flex items-start">
+                <ExclamationCircleIcon className="h-4 w-4 mr-2 text-mustard-500 mt-0.5" />
+                <span>Apply for leave at least 3 days in advance</span>
+              </li>
+              <li className="flex items-start">
+                <ExclamationCircleIcon className="h-4 w-4 mr-2 text-scarlet-500 mt-0.5" />
+                <span>Sick leave requires medical certificate</span>
+              </li>
+              <li className="flex items-start">
+                <ExclamationCircleIcon className="h-4 w-4 mr-2 text-royal-500 mt-0.5" />
+                <span>Maternity leave: 90 days maximum</span>
+              </li>
+              <li className="flex items-start">
+                <ExclamationCircleIcon className="h-4 w-4 mr-2 text-royal-500 mt-0.5" />
+                <span>Study leave: Proof of enrollment required</span>
+              </li>
+            </ul>
           </div>
         </div>
 
         {/* Right Column - Application Form */}
-        <div className="lg:col-span-2">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-mustard-100 dark:border-mustard-900/30">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center">
+              <PaperAirplaneIcon className="h-5 w-5 mr-2 text-mustard-500" />
               Leave Application Form
             </h3>
 
@@ -193,27 +241,37 @@ const ApplyLeave = () => {
               <div className="space-y-6">
                 {/* Leave Type */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Leave Type *
+                  <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-4">
+                    Select Leave Type *
                   </label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 gap-4">
                     {leaveTypes.map((type) => (
                       <button
                         key={type.value}
                         type="button"
                         onClick={() => setFormData({ ...formData, leaveType: type.value })}
-                        className={`p-4 border rounded-lg text-left transition-colors ${
+                        className={`p-4 rounded-xl text-left transition-all duration-200 border-2 ${
                           formData.leaveType === type.value
-                            ? 'border-dark-green-500 bg-dark-green-50 dark:bg-dark-green-900/30'
-                            : 'border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900'
+                            ? `${type.color} dark:${type.color.replace('50', '900/30').replace('100/50', '900/20')} border-mustard-300 dark:border-mustard-700 shadow-lg scale-[1.02]`
+                            : `bg-white/50 dark:bg-neutral-900/50 ${type.border} dark:border-neutral-700 hover:shadow-md hover:scale-[1.01]`
                         }`}
                       >
-                        <div className="font-medium text-gray-900 dark:text-white">
-                          {type.label}
+                        <div className="flex items-center">
+                          <div className={`p-2 rounded-lg ${type.color.split(' ')[0]} ${type.color.split(' ')[1]} mr-3`}>
+                            <CalendarIcon className="h-5 w-5 text-neutral-700 dark:text-neutral-300" />
+                          </div>
+                          <div>
+                            <div className="font-medium text-neutral-900 dark:text-white">
+                              {type.label}
+                            </div>
+                            <div className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
+                              {type.description}
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                          {type.description}
-                        </div>
+                        {formData.leaveType === type.value && (
+                          <ChevronRightIcon className="h-5 w-5 text-mustard-500 absolute top-4 right-4" />
+                        )}
                       </button>
                     ))}
                   </div>
@@ -222,42 +280,48 @@ const ApplyLeave = () => {
                 {/* Dates */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
                       Start Date *
                     </label>
-                    <DatePicker
-                      selected={formData.startDate}
-                      onChange={(date) => setFormData({ ...formData, startDate: date })}
-                      minDate={new Date()}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark-green-500 focus:border-dark-green-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white"
-                    />
+                    <div className="relative">
+                      <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-royal-500" />
+                      <DatePicker
+                        selected={formData.startDate}
+                        onChange={(date) => setFormData({ ...formData, startDate: date })}
+                        minDate={new Date()}
+                        className="w-full pl-10 pr-3 py-2 bg-white/80 dark:bg-neutral-800/80 border border-royal-200 dark:border-royal-800 rounded-xl focus:ring-2 focus:ring-royal-500 focus:border-royal-500 dark:focus:ring-royal-600 dark:focus:border-royal-600 dark:text-white"
+                      />
+                    </div>
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
                       End Date *
                     </label>
-                    <DatePicker
-                      selected={formData.endDate}
-                      onChange={(date) => setFormData({ ...formData, endDate: date })}
-                      minDate={formData.startDate}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark-green-500 focus:border-dark-green-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white"
-                    />
+                    <div className="relative">
+                      <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-royal-500" />
+                      <DatePicker
+                        selected={formData.endDate}
+                        onChange={(date) => setFormData({ ...formData, endDate: date })}
+                        minDate={formData.startDate}
+                        className="w-full pl-10 pr-3 py-2 bg-white/80 dark:bg-neutral-800/80 border border-royal-200 dark:border-royal-800 rounded-xl focus:ring-2 focus:ring-royal-500 focus:border-royal-500 dark:focus:ring-royal-600 dark:focus:border-royal-600 dark:text-white"
+                      />
+                    </div>
                   </div>
                 </div>
 
                 {/* Duration Display */}
-                <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <div className="p-6 rounded-xl bg-gradient-to-r from-mustard-50 to-mustard-100/50 dark:from-mustard-900/20 dark:to-mustard-900/10 border border-mustard-200 dark:border-mustard-800">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Total Leave Days</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400">Total Leave Days</p>
+                      <p className="text-3xl font-bold text-mustard-700 dark:text-mustard-300">
                         {calculateDays()} days
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Period</p>
-                      <p className="font-medium text-gray-900 dark:text-white">
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400">Period</p>
+                      <p className="font-medium text-neutral-900 dark:text-white">
                         {formData.startDate.toLocaleDateString()} - {formData.endDate.toLocaleDateString()}
                       </p>
                     </div>
@@ -266,14 +330,14 @@ const ApplyLeave = () => {
 
                 {/* Reason */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
                     Reason for Leave *
                   </label>
                   <textarea
                     value={formData.reason}
                     onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark-green-500 focus:border-dark-green-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 bg-white/80 dark:bg-neutral-800/80 border border-royal-200 dark:border-royal-800 rounded-xl focus:ring-2 focus:ring-royal-500 focus:border-royal-500 dark:focus:ring-royal-600 dark:focus:border-royal-600 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500"
                     placeholder="Please provide a detailed reason for your leave application..."
                     required
                   />
@@ -281,12 +345,12 @@ const ApplyLeave = () => {
 
                 {/* Supporting Documents */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
                     Supporting Documents (Optional)
                   </label>
-                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-6 text-center">
-                    <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto" />
-                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="border-2 border-dashed border-royal-200 dark:border-royal-800 rounded-xl p-6 text-center bg-white/50 dark:bg-neutral-900/30 hover:bg-white/70 dark:hover:bg-neutral-900/50 transition-all duration-200">
+                    <ArrowUpTrayIcon className="h-12 w-12 text-royal-400 dark:text-royal-500 mx-auto" />
+                    <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
                       Drag and drop files here, or click to browse
                     </p>
                     <input
@@ -298,26 +362,27 @@ const ApplyLeave = () => {
                     />
                     <label
                       htmlFor="file-upload"
-                      className="mt-3 inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 cursor-pointer"
+                      className="mt-3 inline-flex items-center px-4 py-2 bg-gradient-to-r from-royal-50 to-royal-100/50 dark:from-royal-900/30 dark:to-royal-900/20 text-royal-700 dark:text-royal-300 rounded-xl text-sm font-medium hover:shadow-lg hover:from-royal-100 hover:to-royal-200/50 dark:hover:from-royal-800/30 dark:hover:to-royal-800/20 transition-all duration-200 border border-royal-200 dark:border-royal-800 cursor-pointer"
                     >
                       Browse Files
                     </label>
                     {formData.supportingDocuments.length > 0 && (
                       <div className="mt-4">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        <p className="text-sm font-medium text-neutral-900 dark:text-white">
                           Selected files:
                         </p>
                         <ul className="mt-2 space-y-1">
                           {formData.supportingDocuments.map((file, index) => (
-                            <li key={index} className="text-sm text-gray-600 dark:text-gray-400">
-                              • {file.name}
+                            <li key={index} className="text-sm text-neutral-600 dark:text-neutral-400 flex items-center">
+                              <DocumentTextIcon className="h-4 w-4 mr-2 text-royal-500" />
+                              {file.name}
                             </li>
                           ))}
                         </ul>
                       </div>
                     )}
                   </div>
-                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
                     Supported formats: PDF, JPG, PNG (Max 5MB each)
                   </p>
                 </div>
@@ -327,19 +392,20 @@ const ApplyLeave = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-6 py-3 bg-dark-green-600 text-white rounded-lg text-sm font-medium hover:bg-dark-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-dark-green-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                    className={`px-6 py-3 rounded-xl text-sm font-medium flex items-center shadow-lg hover:shadow-xl transition-all duration-200 ${
+                      loading
+                        ? 'bg-neutral-400 cursor-not-allowed text-white'
+                        : 'bg-gradient-to-r from-mustard-500 to-mustard-600 hover:from-mustard-600 hover:to-mustard-700 text-white'
+                    }`}
                   >
                     {loading ? (
                       <>
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
                         Submitting...
                       </>
                     ) : (
                       <>
-                        <PaperAirplaneIcon className="h-5 w-5 mr-2" />
+                        <DocumentArrowUpIcon className="h-5 w-5 mr-2" />
                         Submit Application
                       </>
                     )}
@@ -350,70 +416,73 @@ const ApplyLeave = () => {
           </div>
 
           {/* Previous Applications */}
-          <div className="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Previous Leave Applications
+          <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-mustard-100 dark:border-mustard-900/30">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center">
+              <CalendarIcon className="h-5 w-5 mr-2 text-mustard-500" />
+              Recent Leave Applications
             </h3>
             
             {myLeaves.length === 0 ? (
               <div className="text-center py-8">
-                <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto" />
-                <p className="mt-4 text-gray-600 dark:text-gray-400">
+                <DocumentTextIcon className="h-12 w-12 text-neutral-400 dark:text-neutral-500 mx-auto" />
+                <p className="mt-4 text-neutral-600 dark:text-neutral-400">
                   No previous leave applications
                 </p>
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead>
+                <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700">
+                  <thead className="bg-gradient-to-r from-royal-50 to-mustard-50 dark:from-royal-900/30 dark:to-mustard-900/30">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                         Type
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                         Period
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                         Days
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                         Applied On
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
                     {myLeaves.slice(0, 5).map((leave) => (
-                      <tr key={leave._id}>
-                        <td className="px-4 py-3">
-                          <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">
+                      <tr key={leave._id} className="hover:bg-gradient-to-r hover:from-mustard-50/30 hover:to-scarlet-50/30 dark:hover:from-mustard-900/10 dark:hover:to-scarlet-900/10 transition-all duration-200">
+                        <td className="px-6 py-4">
+                          <span className={`px-3 py-1 text-xs rounded-full bg-gradient-to-r ${getLeaveTypeColor(leave.leaveType)} dark:${getLeaveTypeColor(leave.leaveType).replace('50', '900/30').replace('100/50', '900/20')} text-neutral-700 dark:text-neutral-300 border ${getLeaveTypeBorder(leave.leaveType)} dark:border-neutral-700 capitalize`}>
                             {leave.leaveType}
                           </span>
                         </td>
-                        <td className="px-4 py-3">
-                          <div className="text-sm text-gray-900 dark:text-gray-300">
+                        <td className="px-6 py-4">
+                          <div className="text-sm font-medium text-neutral-900 dark:text-white">
                             {new Date(leave.startDate).toLocaleDateString()}
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                          <div className="text-xs text-neutral-500 dark:text-neutral-400">
                             to {new Date(leave.endDate).toLocaleDateString()}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-300">
-                          {leave.numberOfDays}
+                        <td className="px-6 py-4">
+                          <div className="text-lg font-bold text-mustard-700 dark:text-mustard-300">
+                            {leave.numberOfDays}
+                          </div>
                         </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center">
-                            <div className={`p-1 rounded-full mr-2 ${getStatusColor(leave.status)}`}>
+                        <td className="px-6 py-4">
+                          <div className={`px-3 py-1.5 rounded-xl text-sm font-medium flex items-center w-fit ${getStatusColor(leave.status)}`}>
+                            <div className="mr-2">
                               {getStatusIcon(leave.status)}
                             </div>
-                            <span className={`text-sm font-medium capitalize ${getStatusColor(leave.status)}`}>
+                            <span className="capitalize">
                               {leave.status}
                             </span>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-300">
+                        <td className="px-6 py-4 text-sm text-neutral-600 dark:text-neutral-400">
                           {new Date(leave.createdAt).toLocaleDateString()}
                         </td>
                       </tr>
@@ -424,6 +493,21 @@ const ApplyLeave = () => {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Footer Link */}
+      <div className="text-center pt-8">
+        <a
+          href="https://makongeniwelfare.vercel.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center text-sm text-royal-600 hover:text-royal-700 dark:text-royal-400 dark:hover:text-royal-300"
+        >
+          Community Welfare Portal
+          <svg className="ml-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </a>
       </div>
     </div>
   );

@@ -6,21 +6,48 @@ import {
   UserGroupIcon,
   ClockIcon,
   ExclamationTriangleIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  ArrowRightIcon,
+  DocumentTextIcon,
+  ArrowUpTrayIcon,
+  ShieldExclamationIcon,
+  ChevronRightIcon,
+  ChartBarIcon,
+  AcademicCapIcon,
+  IdentificationIcon
 } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const StaffDashboard = () => {
   const { user, token } = useSelector((state) => state.auth);
   const [stats, setStats] = useState({
-    attendance: {},
-    leaves: {},
+    attendance: {
+      present: 0,
+      absent: 0,
+      late: 0,
+      totalDays: 0,
+      percentage: 0
+    },
+    leaves: {
+      pending: 0,
+      approved: 0,
+      rejected: 0,
+      taken: 0,
+      balance: 0
+    },
     disciplinary: 0,
   });
+  const [recentActivities, setRecentActivities] = useState([]);
+  const [upcomingLeaves, setUpcomingLeaves] = useState([]);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchDashboardData();
+    fetchRecentActivities();
+    fetchUpcomingLeaves();
   }, []);
 
   const fetchDashboardData = async () => {
@@ -34,109 +61,295 @@ const StaffDashboard = () => {
     }
   };
 
+  const fetchRecentActivities = async () => {
+    try {
+      // Mock data - replace with actual API call
+      setRecentActivities([
+        { id: 1, type: 'attendance', action: 'Marked present', time: '2 hours ago', status: 'success' },
+        { id: 2, type: 'leave', action: 'Leave application submitted', time: '1 day ago', status: 'pending' },
+        { id: 3, type: 'attendance', action: 'Late arrival marked', time: '2 days ago', status: 'warning' },
+        { id: 4, type: 'disciplinary', action: 'Appeal submitted', time: '3 days ago', status: 'info' },
+      ]);
+    } catch (error) {
+      console.error('Error fetching recent activities:', error);
+    }
+  };
+
+  const fetchUpcomingLeaves = async () => {
+    try {
+      // Mock data - replace with actual API call
+      setUpcomingLeaves([
+        { id: 1, type: 'annual', startDate: '2024-01-15', endDate: '2024-01-20', status: 'approved' },
+        { id: 2, type: 'sick', startDate: '2024-01-25', endDate: '2024-01-26', status: 'pending' },
+      ]);
+    } catch (error) {
+      console.error('Error fetching upcoming leaves:', error);
+    }
+  };
+
   const statCards = [
     {
-      title: 'Days Present',
-      value: stats.attendance.present || 0,
-      icon: CalendarDaysIcon,
-      color: 'bg-green-100 text-green-800',
+      title: 'Attendance Rate',
+      value: `${stats.attendance.percentage || 0}%`,
+      icon: ChartBarIcon,
+      color: 'bg-gradient-to-r from-mustard-50 to-mustard-100/50 dark:from-mustard-900/30 dark:to-mustard-900/20',
+      border: 'border-mustard-200 dark:border-mustard-800',
+      iconColor: 'text-mustard-600 dark:text-mustard-400',
+      subtitle: `${stats.attendance.present || 0} of ${stats.attendance.totalDays || 0} days`
     },
     {
-      title: 'Pending Leaves',
+      title: 'Leave Balance',
+      value: `${stats.leaves.balance || 0} days`,
+      icon: CalendarDaysIcon,
+      color: 'bg-gradient-to-r from-royal-50 to-royal-100/50 dark:from-royal-900/30 dark:to-royal-900/20',
+      border: 'border-royal-200 dark:border-royal-800',
+      iconColor: 'text-royal-600 dark:text-royal-400',
+      subtitle: `${stats.leaves.taken || 0} days taken`
+    },
+    {
+      title: 'Pending Requests',
       value: stats.leaves.pending || 0,
       icon: ClockIcon,
-      color: 'bg-yellow-100 text-yellow-800',
-    },
-    {
-      title: 'Leave Days Taken',
-      value: stats.leaves.taken || 0,
-      icon: UserGroupIcon,
-      color: 'bg-blue-100 text-blue-800',
+      color: 'bg-gradient-to-r from-yellow-50 to-yellow-100/50 dark:from-yellow-900/30 dark:to-yellow-900/20',
+      border: 'border-yellow-200 dark:border-yellow-800',
+      iconColor: 'text-yellow-600 dark:text-yellow-400',
+      subtitle: 'Awaiting approval'
     },
     {
       title: 'Active Cases',
       value: stats.disciplinary || 0,
-      icon: ExclamationTriangleIcon,
-      color: 'bg-red-100 text-red-800',
+      icon: ShieldExclamationIcon,
+      color: 'bg-gradient-to-r from-scarlet-50 to-scarlet-100/50 dark:from-scarlet-900/30 dark:to-scarlet-900/20',
+      border: 'border-scarlet-200 dark:border-scarlet-800',
+      iconColor: 'text-scarlet-600 dark:text-scarlet-400',
+      subtitle: 'Disciplinary matters'
     },
   ];
 
-  // Helper: format department
-    const departmentName =
-      user?.department?.name ||
-      user?.department ||
-      "No Department";
+  const quickActions = [
+    {
+      title: 'Apply for Leave',
+      description: 'Submit leave application',
+      icon: DocumentTextIcon,
+      color: 'from-royal-500 to-royal-600',
+      hoverColor: 'from-royal-600 to-royal-700',
+      onClick: () => navigate('/staff/apply-leave')
+    },
+    {
+      title: 'View Attendance',
+      description: 'Check attendance records',
+      icon: CalendarDaysIcon,
+      color: 'from-mustard-500 to-mustard-600',
+      hoverColor: 'from-mustard-600 to-mustard-700',
+      onClick: () => navigate('/staff/attendance')
+    },
+    {
+      title: 'Submit Appeal',
+      description: 'File disciplinary appeal',
+      icon: ArrowUpTrayIcon,
+      color: 'from-scarlet-500 to-scarlet-600',
+      hoverColor: 'from-scarlet-600 to-scarlet-700',
+      onClick: () => navigate('/staff/disciplinary-appeal')
+    },
+  ];
 
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'success': return <CheckCircleIcon className="h-5 w-5 text-mustard-500" />;
+      case 'warning': return <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />;
+      case 'info': return <ClockIcon className="h-5 w-5 text-royal-500" />;
+      default: return <ClockIcon className="h-5 w-5 text-neutral-500" />;
+    }
+  };
+
+  const getLeaveStatusColor = (status) => {
+    switch (status) {
+      case 'approved': return 'bg-mustard-100 text-mustard-800 dark:bg-mustard-900/50 dark:text-mustard-300';
+      case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300';
+      case 'rejected': return 'bg-scarlet-100 text-scarlet-800 dark:bg-scarlet-900/50 dark:text-scarlet-300';
+      default: return 'bg-neutral-100 text-neutral-800 dark:bg-neutral-900/50 dark:text-neutral-300';
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const departmentName = user?.department?.name || user?.department || "No Department";
 
   return (
-    <div className="space-y-6">
-
+    <div className="space-y-6 p-6 bg-gradient-to-br from-royal-50 via-mustard-50 to-scarlet-50 dark:from-neutral-900 dark:via-royal-900 dark:to-scarlet-900 min-h-screen font-sans">
       {/* Welcome Banner */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Welcome, {user?.firstName}!
-        </h1>
-        <p className="text-gray-600 dark:text-gray-300 mt-2">
-          Employee ID: {user?.employeeId}
-          {user?.department?.name && (
-            <> | Department: {user.department.name}</>
-          )}
-        </p>
-
+      <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-mustard-100 dark:border-mustard-900/30">
+        <div className="flex flex-col md:flex-row md:items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+              Welcome back, <span className="text-mustard-600 dark:text-mustard-400">{user?.firstName}!</span>
+            </h1>
+            <p className="text-neutral-600 dark:text-neutral-400 mt-2 flex items-center">
+              <IdentificationIcon className="h-5 w-5 mr-2 text-royal-500" />
+              Employee ID: {user?.employeeId}
+            </p>
+            <p className="text-neutral-600 dark:text-neutral-400 mt-1 flex items-center">
+              <AcademicCapIcon className="h-5 w-5 mr-2 text-scarlet-500" />
+              Department: {departmentName}
+            </p>
+          </div>
+          <div className="mt-4 md:mt-0">
+            <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-mustard-50 to-mustard-100/50 dark:from-mustard-900/30 dark:to-mustard-900/20 text-mustard-700 dark:text-mustard-300 rounded-xl text-sm font-medium border border-mustard-200 dark:border-mustard-800">
+              <CalendarDaysIcon className="h-5 w-5 mr-2" />
+              {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((stat) => (
-          <div key={stat.title} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className={`p-3 rounded-full ${stat.color}`}>
-                <stat.icon className="h-6 w-6" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+          <div key={stat.title} 
+            className={`bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border ${stat.border} hover:shadow-xl transition-all duration-200`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                   {stat.title}
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-2xl font-bold text-neutral-900 dark:text-white mt-1">
                   {stat.value}
                 </p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                  {stat.subtitle}
+                </p>
+              </div>
+              <div className={`p-3 rounded-xl ${stat.color}`}>
+                <stat.icon className={`h-6 w-6 ${stat.iconColor}`} />
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Quick Actions
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Quick Actions */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Quick Actions */}
+          <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-mustard-100 dark:border-mustard-900/30">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center">
+              <ArrowRightIcon className="h-5 w-5 mr-2 text-mustard-500" />
+              Quick Actions
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {quickActions.map((action) => (
+                <button
+                  key={action.title}
+                  onClick={action.onClick}
+                  className={`p-4 bg-gradient-to-r ${action.color} hover:${action.hoverColor} text-white rounded-xl text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-200 flex flex-col items-center justify-center text-center`}
+                >
+                  <action.icon className="h-8 w-8 mb-2" />
+                  <span className="font-semibold">{action.title}</span>
+                  <span className="text-xs opacity-90 mt-1">{action.description}</span>
+                </button>
+              ))}
+            </div>
+          </div>
 
-          <button
-            onClick={() => navigate('/staff/apply-leave')}
-            className="px-4 py-3 bg-dark-green-600 text-white rounded-lg hover:bg-dark-green-700"
-          >
-            Apply for Leave
-          </button>
+          {/* Upcoming Leaves */}
+          <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-royal-100 dark:border-royal-900/30">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center">
+              <CalendarDaysIcon className="h-5 w-5 mr-2 text-royal-500" />
+              Upcoming Leaves
+            </h3>
+            {upcomingLeaves.length === 0 ? (
+              <div className="text-center py-8">
+                <CalendarDaysIcon className="h-12 w-12 text-neutral-400 dark:text-neutral-500 mx-auto" />
+                <p className="mt-4 text-neutral-600 dark:text-neutral-400">
+                  No upcoming leaves scheduled
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {upcomingLeaves.map((leave) => (
+                  <div key={leave.id} 
+                    className="p-4 bg-gradient-to-r from-royal-50 to-royal-100/50 dark:from-royal-900/20 dark:to-royal-900/10 rounded-xl border border-royal-200 dark:border-royal-800">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="flex items-center">
+                          <span className="text-sm font-medium text-neutral-900 dark:text-white capitalize">
+                            {leave.type} Leave
+                          </span>
+                          <span className={`ml-3 px-2 py-1 text-xs rounded-full ${getLeaveStatusColor(leave.status)}`}>
+                            {leave.status}
+                          </span>
+                        </div>
+                        <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
+                          {formatDate(leave.startDate)} - {formatDate(leave.endDate)}
+                        </p>
+                      </div>
+                      <ChevronRightIcon className="h-5 w-5 text-royal-500" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
 
-          <button
-            onClick={() => navigate('/staff/attendance')}
-            className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            View Attendance
-          </button>
-
-          <button
-            onClick={() => navigate('/staff/disciplinary-appeal')}
-            className="px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-          >
-            Submit Appeal
-          </button>
-
+        {/* Right Column - Recent Activities */}
+        <div className="lg:col-span-1">
+          <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-scarlet-100 dark:border-scarlet-900/30 h-full">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center">
+              <ClockIcon className="h-5 w-5 mr-2 text-scarlet-500" />
+              Recent Activities
+            </h3>
+            <div className="space-y-4">
+              {recentActivities.map((activity) => (
+                <div key={activity.id} className="flex items-start">
+                  <div className="p-2 rounded-xl bg-neutral-100 dark:bg-neutral-900/50 mr-3">
+                    {getStatusIcon(activity.status)}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-neutral-900 dark:text-white">
+                      {activity.action}
+                    </p>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                      {activity.time}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Attendance Summary */}
+            <div className="mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-700">
+              <h4 className="text-sm font-medium text-neutral-900 dark:text-white mb-3">
+                Attendance Summary
+              </h4>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400">Present</span>
+                  <span className="font-medium text-mustard-600 dark:text-mustard-400">
+                    {stats.attendance.present || 0} days
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400">Absent</span>
+                  <span className="font-medium text-scarlet-600 dark:text-scarlet-400">
+                    {stats.attendance.absent || 0} days
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400">Late Arrivals</span>
+                  <span className="font-medium text-yellow-600 dark:text-yellow-400">
+                    {stats.attendance.late || 0}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
     </div>
   );
 };
