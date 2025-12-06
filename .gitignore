@@ -2,6 +2,8 @@
 node_modules   
 ./backend/.env
 ./frontend/.env
+seedUsers.js
+seedDepartments.js
 
 
 
