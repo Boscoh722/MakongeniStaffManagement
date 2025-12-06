@@ -19,8 +19,10 @@ import {
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import toast from 'react-hot-toast';
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const ApplyLeave = () => {
+  useDocumentTitle('Apply Leave');
   const { user } = useSelector((state) => state.auth);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -65,7 +67,7 @@ const ApplyLeave = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (calculateDays() <= 0) {
       toast.error('End date must be after start date');
       return;
@@ -87,7 +89,7 @@ const ApplyLeave = () => {
 
       await staffService.applyLeave(leaveData);
       toast.success('Leave application submitted successfully');
-      
+
       // Reset form
       setFormData({
         leaveType: 'annual',
@@ -96,7 +98,7 @@ const ApplyLeave = () => {
         reason: '',
         supportingDocuments: []
       });
-      
+
       // Refresh data
       fetchMyLeaves();
       fetchLeaveBalance();
@@ -168,10 +170,10 @@ const ApplyLeave = () => {
               <DocumentTextIcon className="h-5 w-5 mr-2 text-mustard-500" />
               Leave Balance
             </h3>
-            
+
             <div className="space-y-4">
               {leaveTypes.map((type) => (
-                <div key={type.value} 
+                <div key={type.value}
                   className={`p-4 rounded-xl border dark:border-neutral-700/50 ${type.color} dark:${type.color.replace('50', '900/30').replace('100/50', '900/20')}`}>
                   <div className="flex justify-between items-center">
                     <div>
@@ -191,7 +193,7 @@ const ApplyLeave = () => {
                   </div>
                   <div className="mt-3">
                     <div className="h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
-                      <div 
+                      <div
                         className={`h-full rounded-full ${type.color.split(' ')[0]} ${type.color.split(' ')[1]}`}
                         style={{ width: `${Math.min(((leaveBalance[type.value]?.remaining || 0) / (leaveBalance[type.value]?.total || 1)) * 100, 100)}%` }}
                       />
@@ -250,11 +252,10 @@ const ApplyLeave = () => {
                         key={type.value}
                         type="button"
                         onClick={() => setFormData({ ...formData, leaveType: type.value })}
-                        className={`p-4 rounded-xl text-left transition-all duration-200 border-2 ${
-                          formData.leaveType === type.value
-                            ? `${type.color} dark:${type.color.replace('50', '900/30').replace('100/50', '900/20')} border-mustard-300 dark:border-mustard-700 shadow-lg scale-[1.02]`
-                            : `bg-white/50 dark:bg-neutral-900/50 ${type.border} dark:border-neutral-700 hover:shadow-md hover:scale-[1.01]`
-                        }`}
+                        className={`p-4 rounded-xl text-left transition-all duration-200 border-2 ${formData.leaveType === type.value
+                          ? `${type.color} dark:${type.color.replace('50', '900/30').replace('100/50', '900/20')} border-mustard-300 dark:border-mustard-700 shadow-lg scale-[1.02]`
+                          : `bg-white/50 dark:bg-neutral-900/50 ${type.border} dark:border-neutral-700 hover:shadow-md hover:scale-[1.01]`
+                          }`}
                       >
                         <div className="flex items-center">
                           <div className={`p-2 rounded-lg ${type.color.split(' ')[0]} ${type.color.split(' ')[1]} mr-3`}>
@@ -293,7 +294,7 @@ const ApplyLeave = () => {
                       />
                     </div>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
                       End Date *
@@ -392,11 +393,10 @@ const ApplyLeave = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className={`px-6 py-3 rounded-xl text-sm font-medium flex items-center shadow-lg hover:shadow-xl transition-all duration-200 ${
-                      loading
-                        ? 'bg-neutral-400 cursor-not-allowed text-white'
-                        : 'bg-gradient-to-r from-mustard-500 to-mustard-600 hover:from-mustard-600 hover:to-mustard-700 text-white'
-                    }`}
+                    className={`px-6 py-3 rounded-xl text-sm font-medium flex items-center shadow-lg hover:shadow-xl transition-all duration-200 ${loading
+                      ? 'bg-neutral-400 cursor-not-allowed text-white'
+                      : 'bg-gradient-to-r from-mustard-500 to-mustard-600 hover:from-mustard-600 hover:to-mustard-700 text-white'
+                      }`}
                   >
                     {loading ? (
                       <>
@@ -421,7 +421,7 @@ const ApplyLeave = () => {
               <CalendarIcon className="h-5 w-5 mr-2 text-mustard-500" />
               Recent Leave Applications
             </h3>
-            
+
             {myLeaves.length === 0 ? (
               <div className="text-center py-8">
                 <DocumentTextIcon className="h-12 w-12 text-neutral-400 dark:text-neutral-500 mx-auto" />
@@ -495,20 +495,6 @@ const ApplyLeave = () => {
         </div>
       </div>
 
-      {/* Footer Link */}
-      <div className="text-center pt-8">
-        <a
-          href="https://makongeniwelfare.vercel.app/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center text-sm text-royal-600 hover:text-royal-700 dark:text-royal-400 dark:hover:text-royal-300"
-        >
-          Community Welfare Portal
-          <svg className="ml-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-        </a>
-      </div>
     </div>
   );
 };

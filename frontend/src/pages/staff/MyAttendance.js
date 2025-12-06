@@ -32,8 +32,10 @@ import {
 } from 'chart.js';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const MyAttendance = () => {
+  useDocumentTitle('My Attendance');
   const { user } = useSelector((state) => state.auth);
   const [attendance, setAttendance] = useState([]);
   const [stats, setStats] = useState({});
@@ -209,14 +211,14 @@ const MyAttendance = () => {
   const applyQuickFilter = (filter) => {
     const endDate = new Date();
     const startDate = new Date();
-    
+
     if (filter.days) {
       startDate.setDate(startDate.getDate() - filter.days);
     } else if (filter.year) {
       startDate.setFullYear(filter.year, 0, 1);
       startDate.setHours(0, 0, 0, 0);
     }
-    
+
     setFilters({ startDate, endDate });
   };
 
@@ -233,7 +235,7 @@ const MyAttendance = () => {
             Track your attendance records and statistics
           </p>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           <div className="flex items-center text-sm text-royal-600 dark:text-royal-400">
             <InformationCircleIcon className="h-5 w-5 mr-2" />
@@ -267,7 +269,7 @@ const MyAttendance = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-scarlet-100 dark:border-scarlet-900/30 hover:shadow-xl transition-all duration-200">
           <div className="flex items-center justify-between">
             <div>
@@ -284,7 +286,7 @@ const MyAttendance = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-yellow-100 dark:border-yellow-900/30 hover:shadow-xl transition-all duration-200">
           <div className="flex items-center justify-between">
             <div>
@@ -301,7 +303,7 @@ const MyAttendance = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-royal-100 dark:border-royal-900/30 hover:shadow-xl transition-all duration-200">
           <div className="flex items-center justify-between">
             <div>
@@ -329,7 +331,7 @@ const MyAttendance = () => {
               <FunnelIcon className="h-5 w-5 mr-2 text-royal-500" />
               Filter Records
             </h3>
-            
+
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
@@ -345,7 +347,7 @@ const MyAttendance = () => {
                       className="w-full pl-10 pr-3 py-2 bg-white/80 dark:bg-neutral-800/80 border border-royal-200 dark:border-royal-800 rounded-xl focus:ring-2 focus:ring-royal-500 focus:border-royal-500 dark:focus:ring-royal-600 dark:focus:border-royal-600 dark:text-white"
                     />
                   </div>
-                  
+
                   <div className="relative">
                     <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-royal-500" />
                     <DatePicker
@@ -358,7 +360,7 @@ const MyAttendance = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-3">
                   Quick Filters
@@ -375,7 +377,7 @@ const MyAttendance = () => {
                   ))}
                 </div>
               </div>
-              
+
               <button
                 onClick={fetchAttendance}
                 disabled={loading}
@@ -385,7 +387,7 @@ const MyAttendance = () => {
                 {loading ? 'Loading...' : 'Refresh Data'}
               </button>
             </div>
-            
+
             {/* Summary */}
             <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-mustard-50 to-mustard-100/50 dark:from-mustard-900/20 dark:to-mustard-900/10 border border-mustard-200 dark:border-mustard-800">
               <h4 className="font-medium text-neutral-900 dark:text-white mb-3 flex items-center">
@@ -495,7 +497,7 @@ const MyAttendance = () => {
                 Showing records from {filters.startDate.toLocaleDateString()} to {filters.endDate.toLocaleDateString()}
               </p>
             </div>
-            
+
             {loading ? (
               <div className="flex items-center justify-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mustard-600"></div>
@@ -580,20 +582,7 @@ const MyAttendance = () => {
         </div>
       </div>
 
-      {/* Footer Link */}
-      <div className="text-center pt-8">
-        <a
-          href="https://makongeniwelfare.vercel.app/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center text-sm text-royal-600 hover:text-royal-700 dark:text-royal-400 dark:hover:text-royal-300"
-        >
-          Community Welfare Portal
-          <svg className="ml-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-        </a>
-      </div>
+
     </div>
   );
 };

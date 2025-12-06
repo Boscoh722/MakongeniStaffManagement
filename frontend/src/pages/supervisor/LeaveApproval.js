@@ -11,8 +11,10 @@ import {
   UserGroupIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const LeaveApproval = () => {
+  useDocumentTitle('Leave Approval');
   const { user } = useSelector((state) => state.auth);
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +51,7 @@ const LeaveApproval = () => {
     const reason = prompt('Please enter rejection reason:');
     if (reason) {
       try {
-        await staffService.updateLeaveStatus(leaveId, { 
+        await staffService.updateLeaveStatus(leaveId, {
           status: 'rejected',
           rejectionReason: reason
         });
@@ -164,13 +166,13 @@ const LeaveApproval = () => {
                   </button>
                 </div>
               </div>
-              
+
               <div className="mt-4">
                 <p className="text-sm text-gray-700 dark:text-gray-300">
                   <span className="font-medium">Reason:</span> {leave.reason}
                 </p>
               </div>
-              
+
               <div className="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
                 <ClockIcon className="h-4 w-4 mr-1" />
                 Applied on {new Date(leave.createdAt).toLocaleDateString()}
@@ -187,7 +189,7 @@ const LeaveApproval = () => {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Leave Application Details
             </h3>
-            
+
             <div className="space-y-6">
               {/* Staff Information */}
               <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">

@@ -10,8 +10,10 @@ import {
 } from '@heroicons/react/24/outline';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const ClerkGenerateReports = () => {
+  useDocumentTitle('Generate Reports');
   const [reportType, setReportType] = useState('attendance');
   const [startDate, setStartDate] = useState(new Date(new Date().setDate(new Date().getDate() - 30)));
   const [endDate, setEndDate] = useState(new Date());
@@ -113,17 +115,17 @@ const ClerkGenerateReports = () => {
                       key={type.id}
                       onClick={() => setReportType(type.id)}
                       className={`p-4 rounded-xl border-2 flex flex-col items-center transition-all duration-200 hover:shadow-lg ${reportType === type.id
-                          ? `border-${type.color}-500 bg-gradient-to-r from-${type.color}-50 to-${type.color}-100/50 dark:from-${type.color}-900/30 dark:to-${type.color}-900/20`
-                          : 'border-mustard-200 dark:border-mustard-800 hover:border-mustard-300 dark:hover:border-mustard-700'
+                        ? `border-${type.color}-500 bg-gradient-to-r from-${type.color}-50 to-${type.color}-100/50 dark:from-${type.color}-900/30 dark:to-${type.color}-900/20`
+                        : 'border-mustard-200 dark:border-mustard-800 hover:border-mustard-300 dark:hover:border-mustard-700'
                         }`}
                     >
                       <type.icon className={`h-8 w-8 mb-2 ${reportType === type.id
-                          ? `text-${type.color}-600 dark:text-${type.color}-400`
-                          : 'text-neutral-400'
+                        ? `text-${type.color}-600 dark:text-${type.color}-400`
+                        : 'text-neutral-400'
                         }`} />
                       <span className={`text-sm font-medium ${reportType === type.id
-                          ? `text-${type.color}-700 dark:text-${type.color}-300`
-                          : 'text-neutral-700 dark:text-neutral-300'
+                        ? `text-${type.color}-700 dark:text-${type.color}-300`
+                        : 'text-neutral-700 dark:text-neutral-300'
                         }`}>
                         {type.label}
                       </span>
@@ -213,8 +215,8 @@ const ClerkGenerateReports = () => {
               onClick={handleGenerateReport}
               disabled={loading}
               className={`w-full px-4 py-3 rounded-xl font-medium flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 ${loading
-                  ? 'bg-neutral-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-mustard-500 to-mustard-600 hover:from-mustard-600 hover:to-mustard-700 text-white'
+                ? 'bg-neutral-400 cursor-not-allowed'
+                : 'bg-gradient-to-r from-mustard-500 to-mustard-600 hover:from-mustard-600 hover:to-mustard-700 text-white'
                 }`}
             >
               {loading ? (

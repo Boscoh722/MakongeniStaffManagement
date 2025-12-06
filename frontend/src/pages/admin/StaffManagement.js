@@ -14,9 +14,11 @@ import {
 import toast from 'react-hot-toast';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const StaffManagement = () => {
   const { user } = useSelector((s) => s.auth || {});
+  useDocumentTitle('Staff Management');
   const [staff, setStaff] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -350,8 +352,8 @@ const StaffManagement = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${employee.isActive
-                          ? 'bg-mustard-100 text-mustard-800 dark:bg-mustard-900/50 dark:text-mustard-300'
-                          : 'bg-scarlet-100 text-scarlet-800 dark:bg-scarlet-900/50 dark:text-scarlet-300'
+                        ? 'bg-mustard-100 text-mustard-800 dark:bg-mustard-900/50 dark:text-mustard-300'
+                        : 'bg-scarlet-100 text-scarlet-800 dark:bg-scarlet-900/50 dark:text-scarlet-300'
                         }`}>
                         {employee.isActive ? 'Active' : 'Inactive'}
                       </span>

@@ -16,8 +16,10 @@ import {
   BriefcaseIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline';
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const SupervisorStaff = () => {
+  useDocumentTitle('Team Management');
   const { user } = useSelector((state) => state.auth);
   const [staff, setStaff] = useState([]);
   const [filteredStaff, setFilteredStaff] = useState([]);
@@ -37,15 +39,15 @@ const SupervisorStaff = () => {
     try {
       setLoading(true);
       const response = await staffService.getStaff();
-      
+
       // Supervisor oversees all non-admin staff
-      const allStaff = response.data.filter(employee => 
+      const allStaff = response.data.filter(employee =>
         employee.role !== 'admin' && employee.role !== 'supervisor'
       );
-      
+
       setStaff(allStaff);
       setFilteredStaff(allStaff);
-      
+
     } catch (error) {
       console.error('Error fetching staff:', error);
       toast.error('Failed to load staff');
@@ -111,23 +113,22 @@ const SupervisorStaff = () => {
   };
 
   const getRoleBadgeColor = (role) => {
-    switch(role) {
-      case 'clerk': 
+    switch (role) {
+      case 'clerk':
         return 'bg-gradient-to-r from-scarlet-100 to-scarlet-200 text-scarlet-800 dark:from-scarlet-900/50 dark:to-scarlet-800/50 dark:text-scarlet-300';
-      case 'staff': 
+      case 'staff':
         return 'bg-gradient-to-r from-royal-100 to-royal-200 text-royal-800 dark:from-royal-900/50 dark:to-royal-800/50 dark:text-royal-300';
-      default: 
+      default:
         return 'bg-gradient-to-r from-mustard-100 to-mustard-200 text-mustard-800 dark:from-mustard-900/50 dark:to-mustard-800/50 dark:text-mustard-300';
     }
   };
 
   const getStatusBadge = (isActive) => {
     return (
-      <span className={`px-3 py-1.5 text-xs rounded-full flex items-center w-fit font-medium ${
-        isActive 
-          ? 'bg-gradient-to-r from-mustard-100 to-mustard-200 text-mustard-800 dark:from-mustard-900/50 dark:to-mustard-800/50 dark:text-mustard-300'
-          : 'bg-gradient-to-r from-scarlet-100 to-scarlet-200 text-scarlet-800 dark:from-scarlet-900/50 dark:to-scarlet-800/50 dark:text-scarlet-300'
-      }`}>
+      <span className={`px-3 py-1.5 text-xs rounded-full flex items-center w-fit font-medium ${isActive
+        ? 'bg-gradient-to-r from-mustard-100 to-mustard-200 text-mustard-800 dark:from-mustard-900/50 dark:to-mustard-800/50 dark:text-mustard-300'
+        : 'bg-gradient-to-r from-scarlet-100 to-scarlet-200 text-scarlet-800 dark:from-scarlet-900/50 dark:to-scarlet-800/50 dark:text-scarlet-300'
+        }`}>
         {isActive ? (
           <>
             <CheckCircleIcon className="h-3 w-3 mr-1.5" />
@@ -364,7 +365,7 @@ const SupervisorStaff = () => {
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-neutral-500 dark:text-neutral-400">Joined</p>
                       <p className="text-neutral-900 dark:text-white">
-                        {employee.dateOfJoining 
+                        {employee.dateOfJoining
                           ? new Date(employee.dateOfJoining).toLocaleDateString()
                           : 'N/A'}
                       </p>
@@ -423,20 +424,7 @@ const SupervisorStaff = () => {
         </div>
       </div>
 
-      {/* Footer Link */}
-      <div className="text-center pt-4">
-        <a
-          href="https://makongeniwelfare.vercel.app/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center text-sm text-royal-600 hover:text-royal-700 dark:text-royal-400 dark:hover:text-royal-300"
-        >
-          Community Welfare Portal
-          <svg className="ml-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-        </a>
-      </div>
+
     </div>
   );
 };

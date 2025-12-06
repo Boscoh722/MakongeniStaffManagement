@@ -9,19 +9,21 @@ import {
   CalendarIcon,
   UserGroupIcon,
   DocumentCheckIcon,
-  ArrowPathIcon, 
+  ArrowPathIcon,
   CheckBadgeIcon,
   ExclamationCircleIcon,
-  ArrowDownTrayIcon, 
-  PencilIcon, 
+  ArrowDownTrayIcon,
+  PencilIcon,
   DocumentArrowDownIcon,
   PlusIcon,
   MinusIcon,
   MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 
 const SupervisorMarkAttendance = () => {
+  useDocumentTitle('Mark Attendance');
   const { user } = useSelector((state) => state.auth);
   const [staff, setStaff] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -39,23 +41,23 @@ const SupervisorMarkAttendance = () => {
   useEffect(() => {
     // Filter staff based on department and search term
     let result = staff;
-    
+
     if (departmentFilter !== 'all') {
-      result = result.filter(employee => 
-        employee.department?.name === departmentFilter || 
+      result = result.filter(employee =>
+        employee.department?.name === departmentFilter ||
         employee.department === departmentFilter
       );
     }
-    
+
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      result = result.filter(employee => 
+      result = result.filter(employee =>
         employee.firstName?.toLowerCase().includes(term) ||
         employee.lastName?.toLowerCase().includes(term) ||
         employee.employeeId?.toLowerCase().includes(term)
       );
     }
-    
+
     setFilteredStaff(result);
   }, [departmentFilter, searchTerm, staff]);
 
@@ -64,15 +66,15 @@ const SupervisorMarkAttendance = () => {
       setLoading(true);
       const response = await staffService.getStaff();
       const staffData = response.data || [];
-      
+
       // Filter only supervised staff
-      const supervisedStaff = staffData.filter(s => 
+      const supervisedStaff = staffData.filter(s =>
         s.supervisor?._id === user._id || s.supervisor === user._id
       );
-      
+
       // Initialize attendance data for each staff member
       const initialAttendance = {};
-      
+
       supervisedStaff.forEach(employee => {
         initialAttendance[employee._id] = {
           status: 'present', // Default status
@@ -83,11 +85,11 @@ const SupervisorMarkAttendance = () => {
           employeeId: employee.employeeId
         };
       });
-      
+
       setStaff(supervisedStaff);
       setFilteredStaff(supervisedStaff);
       setAttendanceData(initialAttendance);
-      
+
     } catch (error) {
       console.error('Error fetching staff:', error);
       toast.error('Failed to load staff data');
@@ -99,7 +101,7 @@ const SupervisorMarkAttendance = () => {
   const handleMarkAttendance = async () => {
     try {
       setSaving(true);
-      
+
       // Prepare data for bulk endpoint
       const attendanceArray = Object.values(attendanceData).map(data => ({
         staffId: data.staffId,
@@ -114,21 +116,21 @@ const SupervisorMarkAttendance = () => {
         date: selectedDate.toISOString().split('T')[0],
         attendanceData: attendanceArray
       });
-      
+
       console.log('Response:', response);
       toast.success(`Attendance marked for ${attendanceArray.length} staff members`);
-      
+
       // Reset remarks after saving
       const resetAttendance = { ...attendanceData };
       Object.keys(resetAttendance).forEach(key => {
         resetAttendance[key].remarks = '';
       });
       setAttendanceData(resetAttendance);
-      
+
     } catch (error) {
       console.error('Mark attendance error:', error);
       console.error('Error details:', error.response?.data);
-      
+
       if (error.response?.data?.error?.includes('Missing required fields')) {
         toast.error('Error: Some staff members are missing required data. Please check all entries.');
       } else {
@@ -171,7 +173,7 @@ const SupervisorMarkAttendance = () => {
   };
 
   const getStatusIcon = (status) => {
-    switch(status) {
+    switch (status) {
       case 'present': return <CheckCircleIcon className="h-5 w-5" />;
       case 'absent': return <XCircleIcon className="h-5 w-5" />;
       case 'late': return <ClockIcon className="h-5 w-5" />;
@@ -190,13 +192,13 @@ const SupervisorMarkAttendance = () => {
       'off-duty': 0,
       sick: 0
     };
-    
+
     Object.values(attendanceData).forEach(record => {
       if (record.status in stats) {
         stats[record.status]++;
       }
     });
-    
+
     return stats;
   };
 
@@ -212,7 +214,7 @@ const SupervisorMarkAttendance = () => {
             Mark attendance for your supervised staff members
           </p>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full lg:w-auto">
           {/* Date Picker */}
           <div className="relative w-full sm:w-auto">
@@ -230,7 +232,7 @@ const SupervisorMarkAttendance = () => {
               />
             </div>
           </div>
-          
+
           {/* Quick Actions */}
           <div className="flex space-x-2">
             <button
@@ -266,7 +268,7 @@ const SupervisorMarkAttendance = () => {
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-royal-500" />
           </div>
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">
             Department
@@ -283,7 +285,7 @@ const SupervisorMarkAttendance = () => {
               ))}
           </select>
         </div>
-        
+
         <div className="flex items-end">
           <button
             onClick={fetchStaff}
@@ -371,9 +373,8 @@ const SupervisorMarkAttendance = () => {
                         <select
                           value={attendanceData[employee._id]?.status || 'present'}
                           onChange={(e) => updateAttendance(employee._id, 'status', e.target.value)}
-                          className={`px-3 py-2 rounded-xl focus:ring-2 focus:ring-royal-500 focus:border-royal-500 dark:focus:ring-royal-600 dark:focus:border-royal-600 dark:text-white w-full ${
-                            getStatusColor(attendanceData[employee._id]?.status || 'present')
-                          }`}
+                          className={`px-3 py-2 rounded-xl focus:ring-2 focus:ring-royal-500 focus:border-royal-500 dark:focus:ring-royal-600 dark:focus:border-royal-600 dark:text-white w-full ${getStatusColor(attendanceData[employee._id]?.status || 'present')
+                            }`}
                         >
                           <option value="present">Present</option>
                           <option value="absent">Absent</option>
@@ -398,11 +399,10 @@ const SupervisorMarkAttendance = () => {
                             <button
                               key={status}
                               onClick={() => updateAttendance(employee._id, 'status', status)}
-                              className={`p-1 rounded-lg ${
-                                attendanceData[employee._id]?.status === status
-                                  ? getStatusColor(status)
-                                  : 'text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300'
-                              }`}
+                              className={`p-1 rounded-lg ${attendanceData[employee._id]?.status === status
+                                ? getStatusColor(status)
+                                : 'text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300'
+                                }`}
                               title={status.charAt(0).toUpperCase() + status.slice(1)}
                             >
                               {getStatusIcon(status)}
@@ -415,7 +415,7 @@ const SupervisorMarkAttendance = () => {
                 </tbody>
               </table>
             </div>
-            
+
             {filteredStaff.length === 0 && (
               <div className="text-center py-12">
                 <div className="mx-auto h-16 w-16 bg-gradient-to-r from-mustard-100 to-scarlet-100 dark:from-mustard-900/30 dark:to-scarlet-900/30 rounded-full flex items-center justify-center mb-4">
@@ -423,7 +423,7 @@ const SupervisorMarkAttendance = () => {
                 </div>
                 <h3 className="text-lg font-medium text-neutral-900 dark:text-white">No staff found</h3>
                 <p className="text-neutral-600 dark:text-neutral-400 mt-1">
-                  {searchTerm || departmentFilter !== 'all' 
+                  {searchTerm || departmentFilter !== 'all'
                     ? 'Try adjusting your filters'
                     : 'No staff members found under your supervision'
                   }
@@ -437,11 +437,10 @@ const SupervisorMarkAttendance = () => {
             <button
               onClick={handleMarkAttendance}
               disabled={saving || filteredStaff.length === 0}
-              className={`px-6 py-3 rounded-xl text-sm font-medium flex items-center shadow-lg hover:shadow-xl transition-all duration-200 ${
-                saving || filteredStaff.length === 0
-                  ? 'bg-neutral-400 cursor-not-allowed text-white'
-                  : 'bg-gradient-to-r from-mustard-500 to-mustard-600 hover:from-mustard-600 hover:to-mustard-700 text-white'
-              }`}
+              className={`px-6 py-3 rounded-xl text-sm font-medium flex items-center shadow-lg hover:shadow-xl transition-all duration-200 ${saving || filteredStaff.length === 0
+                ? 'bg-neutral-400 cursor-not-allowed text-white'
+                : 'bg-gradient-to-r from-mustard-500 to-mustard-600 hover:from-mustard-600 hover:to-mustard-700 text-white'
+                }`}
             >
               {saving ? (
                 <>
@@ -457,20 +456,7 @@ const SupervisorMarkAttendance = () => {
             </button>
           </div>
 
-          {/* Footer Link */}
-          <div className="text-center pt-8">
-            <a
-              href="https://makongeniwelfare.vercel.app/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center text-sm text-royal-600 hover:text-royal-700 dark:text-royal-400 dark:hover:text-royal-300"
-            >
-              Community Welfare Portal
-              <svg className="ml-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-            </a>
-          </div>
+
         </>
       )}
     </div>

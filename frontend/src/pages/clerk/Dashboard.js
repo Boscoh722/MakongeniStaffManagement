@@ -8,9 +8,11 @@ import {
   UsersIcon,
 } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const ClerkDashboard = () => {
   const { user } = useSelector((state) => state.auth);
+  useDocumentTitle('Dashboard');
 
   const [todayStats, setTodayStats] = useState({
     totalStaff: 0,

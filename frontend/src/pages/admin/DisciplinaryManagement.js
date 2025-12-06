@@ -17,9 +17,11 @@ import {
 import toast from 'react-hot-toast';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const DisciplinaryManagement = () => {
   const { user } = useSelector((state) => state.auth);
+  useDocumentTitle('Disciplinary Management');
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({

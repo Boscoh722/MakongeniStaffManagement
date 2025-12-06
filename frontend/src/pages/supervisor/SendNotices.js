@@ -14,8 +14,10 @@ import {
   ArrowPathIcon,
   DocumentDuplicateIcon
 } from '@heroicons/react/24/outline';
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const SendNotices = () => {
+  useDocumentTitle('Send Notices');
   const { user } = useSelector((state) => state.auth);
   const [staff, setStaff] = useState([]);
   const [selectedStaff, setSelectedStaff] = useState([]);
@@ -36,12 +38,12 @@ const SendNotices = () => {
     try {
       setLoading(true);
       const response = await staffService.getStaff();
-      
+
       // Filter: Supervisor oversees all non-admin staff
-      const allStaff = response.data.filter(employee => 
+      const allStaff = response.data.filter(employee =>
         employee.role !== 'admin' && employee.role !== 'supervisor'
       );
-      
+
       setStaff(allStaff);
     } catch (error) {
       console.error('Error fetching staff:', error);
@@ -74,12 +76,12 @@ const SendNotices = () => {
       toast.error('Please enter a subject');
       return;
     }
-    
+
     if (!formData.message.trim()) {
       toast.error('Please enter a message');
       return;
     }
-    
+
     if (selectedStaff.length === 0) {
       toast.error('Please select at least one staff member');
       return;
@@ -87,7 +89,7 @@ const SendNotices = () => {
 
     try {
       setSending(true);
-      
+
       // Prepare notice data
       const noticeData = {
         subject: formData.subject,
@@ -102,12 +104,12 @@ const SendNotices = () => {
       // In a real app, you would call an API endpoint
       // For now, simulate sending
       console.log('Sending notice:', noticeData);
-      
+
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       toast.success(`Notice sent to ${selectedStaff.length} staff members`);
-      
+
       // Reset form
       setFormData({
         subject: '',
@@ -116,7 +118,7 @@ const SendNotices = () => {
         priority: 'normal'
       });
       setSelectedStaff([]);
-      
+
     } catch (error) {
       console.error('Error sending notice:', error);
       toast.error('Failed to send notice');
@@ -133,7 +135,7 @@ const SendNotices = () => {
   };
 
   const getPriorityColor = (priority) => {
-    switch(priority) {
+    switch (priority) {
       case 'urgent': return 'bg-gradient-to-r from-scarlet-100 to-scarlet-200 text-scarlet-800 dark:from-scarlet-900/50 dark:to-scarlet-800/50 dark:text-scarlet-300';
       case 'high': return 'bg-gradient-to-r from-mustard-100 to-mustard-200 text-mustard-800 dark:from-mustard-900/50 dark:to-mustard-800/50 dark:text-mustard-300';
       default: return 'bg-gradient-to-r from-royal-100 to-royal-200 text-royal-800 dark:from-royal-900/50 dark:to-royal-800/50 dark:text-royal-300';
@@ -141,7 +143,7 @@ const SendNotices = () => {
   };
 
   const getTypeIcon = (type) => {
-    switch(type) {
+    switch (type) {
       case 'urgent': return <ExclamationCircleIcon className="h-4 w-4" />;
       case 'reminder': return <ClockIcon className="h-4 w-4" />;
       case 'meeting': return <UserGroupIcon className="h-4 w-4" />;
@@ -233,15 +235,14 @@ const SendNotices = () => {
               <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
                 Select Recipients
               </h3>
-              <span className={`px-3 py-1 text-xs rounded-full font-medium ${
-                selectedStaff.length > 0 
-                  ? 'bg-gradient-to-r from-mustard-100 to-mustard-200 text-mustard-800 dark:from-mustard-900/50 dark:to-mustard-800/50 dark:text-mustard-300'
-                  : 'bg-gradient-to-r from-neutral-100 to-neutral-200 text-neutral-800 dark:from-neutral-900/50 dark:to-neutral-800/50 dark:text-neutral-300'
-              }`}>
+              <span className={`px-3 py-1 text-xs rounded-full font-medium ${selectedStaff.length > 0
+                ? 'bg-gradient-to-r from-mustard-100 to-mustard-200 text-mustard-800 dark:from-mustard-900/50 dark:to-mustard-800/50 dark:text-mustard-300'
+                : 'bg-gradient-to-r from-neutral-100 to-neutral-200 text-neutral-800 dark:from-neutral-900/50 dark:to-neutral-800/50 dark:text-neutral-300'
+                }`}>
                 {selectedStaff.length} selected
               </span>
             </div>
-            
+
             <div className="mb-6">
               <button
                 onClick={handleSelectAll}
@@ -262,19 +263,17 @@ const SendNotices = () => {
                 {staff.map(employee => (
                   <div
                     key={employee._id}
-                    className={`p-3 rounded-xl border cursor-pointer transition-all duration-200 ${
-                      selectedStaff.includes(employee._id)
-                        ? 'border-mustard-500 bg-gradient-to-r from-mustard-50 to-mustard-100/50 dark:from-mustard-900/20 dark:to-mustard-900/10 shadow-md'
-                        : 'border-mustard-200 dark:border-mustard-800 hover:bg-gradient-to-r from-royal-50 to-royal-100/50 dark:hover:from-royal-900/10 dark:hover:to-royal-900/5 hover:border-royal-300 dark:hover:border-royal-700'
-                    }`}
+                    className={`p-3 rounded-xl border cursor-pointer transition-all duration-200 ${selectedStaff.includes(employee._id)
+                      ? 'border-mustard-500 bg-gradient-to-r from-mustard-50 to-mustard-100/50 dark:from-mustard-900/20 dark:to-mustard-900/10 shadow-md'
+                      : 'border-mustard-200 dark:border-mustard-800 hover:bg-gradient-to-r from-royal-50 to-royal-100/50 dark:hover:from-royal-900/10 dark:hover:to-royal-900/5 hover:border-royal-300 dark:hover:border-royal-700'
+                      }`}
                     onClick={() => handleSelectStaff(employee._id)}
                   >
                     <div className="flex items-center">
-                      <div className={`h-5 w-5 rounded-lg border mr-3 flex items-center justify-center transition-all duration-200 ${
-                        selectedStaff.includes(employee._id)
-                          ? 'bg-gradient-to-r from-mustard-500 to-mustard-600 border-mustard-600'
-                          : 'border-mustard-400 dark:border-mustard-600'
-                      }`}>
+                      <div className={`h-5 w-5 rounded-lg border mr-3 flex items-center justify-center transition-all duration-200 ${selectedStaff.includes(employee._id)
+                        ? 'bg-gradient-to-r from-mustard-500 to-mustard-600 border-mustard-600'
+                        : 'border-mustard-400 dark:border-mustard-600'
+                        }`}>
                         {selectedStaff.includes(employee._id) && (
                           <CheckCircleIcon className="h-3.5 w-3.5 text-white" />
                         )}
@@ -316,7 +315,7 @@ const SendNotices = () => {
                 </span>
               </div>
             </div>
-            
+
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -335,7 +334,7 @@ const SendNotices = () => {
                     <option value="policy">Policy Update</option>
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                     Priority Level
@@ -396,15 +395,14 @@ const SendNotices = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   <button
                     onClick={handleSendNotice}
                     disabled={sending || selectedStaff.length === 0}
-                    className={`ml-4 px-6 py-3 rounded-xl font-medium text-white flex items-center shadow-lg hover:shadow-xl transition-all duration-200 ${
-                      sending || selectedStaff.length === 0
-                        ? 'bg-gradient-to-r from-neutral-400 to-neutral-500 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-royal-500 to-royal-600 hover:from-royal-600 hover:to-royal-700'
-                    }`}
+                    className={`ml-4 px-6 py-3 rounded-xl font-medium text-white flex items-center shadow-lg hover:shadow-xl transition-all duration-200 ${sending || selectedStaff.length === 0
+                      ? 'bg-gradient-to-r from-neutral-400 to-neutral-500 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-royal-500 to-royal-600 hover:from-royal-600 hover:to-royal-700'
+                      }`}
                   >
                     {sending ? (
                       <>
@@ -454,20 +452,7 @@ const SendNotices = () => {
         </div>
       </div>
 
-      {/* Footer Link */}
-      <div className="text-center pt-4">
-        <a
-          href="https://makongeniwelfare.vercel.app/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center text-sm text-royal-600 hover:text-royal-700 dark:text-royal-400 dark:hover:text-royal-300"
-        >
-          Community Welfare Portal
-          <svg className="ml-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-        </a>
-      </div>
+
     </div>
   );
 };

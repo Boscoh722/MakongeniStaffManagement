@@ -9,9 +9,11 @@ import {
   PhoneIcon,
   EnvelopeIcon
 } from '@heroicons/react/24/outline';
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const ClerkViewStaff = () => {
   const { user } = useSelector((state) => state.auth);
+  useDocumentTitle('View Staff');
   const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -113,8 +115,8 @@ const ClerkViewStaff = () => {
                 </div>
                 <div>
                   <span className={`px-2 py-1 text-xs font-semibold rounded-full ${employee.isActive
-                      ? 'bg-mustard-100 text-mustard-800 dark:bg-mustard-900/50 dark:text-mustard-300'
-                      : 'bg-scarlet-100 text-scarlet-800 dark:bg-scarlet-900/50 dark:text-scarlet-300'
+                    ? 'bg-mustard-100 text-mustard-800 dark:bg-mustard-900/50 dark:text-mustard-300'
+                    : 'bg-scarlet-100 text-scarlet-800 dark:bg-scarlet-900/50 dark:text-scarlet-300'
                     }`}>
                     {employee.isActive ? 'Active' : 'Inactive'}
                   </span>

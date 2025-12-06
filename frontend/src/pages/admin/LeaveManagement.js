@@ -12,9 +12,11 @@ import {
 import toast from 'react-hot-toast';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const LeaveManagement = () => {
   const { user } = useSelector((state) => state.auth);
+  useDocumentTitle('Leave Management');
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -440,8 +442,8 @@ const LeaveManagement = () => {
               <button
                 onClick={handleStatusUpdate}
                 className={`px-4 py-2 rounded-xl text-sm font-medium text-white shadow-lg hover:shadow-xl transition-all duration-200 ${statusUpdate.status === 'approved'
-                    ? 'bg-gradient-to-r from-mustard-500 to-mustard-600 hover:from-mustard-600 hover:to-mustard-700'
-                    : 'bg-gradient-to-r from-scarlet-500 to-scarlet-600 hover:from-scarlet-600 hover:to-scarlet-700'
+                  ? 'bg-gradient-to-r from-mustard-500 to-mustard-600 hover:from-mustard-600 hover:to-mustard-700'
+                  : 'bg-gradient-to-r from-scarlet-500 to-scarlet-600 hover:from-scarlet-600 hover:to-scarlet-700'
                   }`}
               >
                 {statusUpdate.status === 'approved' ? 'Approve' : 'Reject'}

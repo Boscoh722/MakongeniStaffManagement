@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { staffService } from '../../services/staffService';
 import toast from 'react-hot-toast';
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const MarkAttendance = () => {
   const { user } = useSelector((state) => state.auth);
+  useDocumentTitle('Mark Attendance');
   const [staff, setStaff] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [attendanceData, setAttendanceData] = useState({});
@@ -259,8 +261,8 @@ const MarkAttendance = () => {
               onClick={handleMarkAttendance}
               disabled={saving}
               className={`px-6 py-2 rounded-xl text-sm font-medium text-white flex items-center shadow-lg hover:shadow-xl transition-all duration-200 ${saving
-                  ? 'bg-neutral-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-mustard-500 to-mustard-600 hover:from-mustard-600 hover:to-mustard-700'
+                ? 'bg-neutral-400 cursor-not-allowed'
+                : 'bg-gradient-to-r from-mustard-500 to-mustard-600 hover:from-mustard-600 hover:to-mustard-700'
                 }`}
             >
               {saving ? (

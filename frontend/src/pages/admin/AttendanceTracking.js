@@ -29,9 +29,11 @@ import {
 } from 'chart.js';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const AttendanceTracking = () => {
   const { user } = useSelector((state) => state.auth);
+  useDocumentTitle('Attendance Tracking');
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({});

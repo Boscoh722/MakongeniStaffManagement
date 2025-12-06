@@ -24,8 +24,10 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const Profile = () => {
+  useDocumentTitle('My Profile');
   const { user } = useSelector((state) => state.auth);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -118,7 +120,7 @@ const Profile = () => {
       setIsUploading(true);
       const formData = new FormData();
       formData.append('profileImage', file);
-      
+
       await staffService.uploadProfileImage(user._id, formData);
       toast.success('Profile image updated successfully');
       fetchProfile();
@@ -130,13 +132,13 @@ const Profile = () => {
   };
 
   const getStatusColor = (isActive) => {
-    return isActive 
+    return isActive
       ? 'bg-mustard-100 text-mustard-800 border-mustard-200 dark:bg-mustard-900/50 dark:text-mustard-300 dark:border-mustard-800'
       : 'bg-scarlet-100 text-scarlet-800 border-scarlet-200 dark:bg-scarlet-900/50 dark:text-scarlet-300 dark:border-scarlet-800';
   };
 
   const getStatusIcon = (isActive) => {
-    return isActive 
+    return isActive
       ? <CheckCircleIcon className="h-5 w-5" />
       : <XCircleIcon className="h-5 w-5" />;
   };
@@ -171,7 +173,7 @@ const Profile = () => {
             View and update your personal information
           </p>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           <div className="flex items-center text-sm text-royal-600 dark:text-royal-400">
             <ClockIcon className="h-5 w-5 mr-2" />
@@ -206,9 +208,9 @@ const Profile = () => {
               <div className="relative group">
                 <div className="h-40 w-40 rounded-full bg-gradient-to-r from-mustard-100 to-scarlet-100 dark:from-mustard-900/30 dark:to-scarlet-900/30 flex items-center justify-center mb-6 overflow-hidden">
                   {profile?.profileImage ? (
-                    <img 
-                      src={profile.profileImage} 
-                      alt="Profile" 
+                    <img
+                      src={profile.profileImage}
+                      alt="Profile"
                       className="h-40 w-40 rounded-full object-cover"
                     />
                   ) : (
@@ -236,13 +238,13 @@ const Profile = () => {
                     </label>
                   )}
                 </div>
-                
+
                 <div className="text-center">
                   <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
                     {profile?.firstName} {profile?.lastName}
                   </h2>
                   <p className="text-royal-600 dark:text-royal-400 mt-1">{profile?.position}</p>
-                  
+
                   <div className="mt-4 flex items-center justify-center">
                     <div className={`px-3 py-1.5 rounded-full flex items-center ${getStatusColor(profile?.isActive)}`}>
                       <div className="mr-2">
@@ -323,7 +325,7 @@ const Profile = () => {
                 </button>
               )}
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
@@ -334,7 +336,7 @@ const Profile = () => {
                   <p className="text-neutral-900 dark:text-white">{profile?.email}</p>
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
                   Phone Number
@@ -359,7 +361,7 @@ const Profile = () => {
                   </div>
                 )}
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
                   Date of Joining
@@ -371,7 +373,7 @@ const Profile = () => {
                   </p>
                 </div>
               </div>
-              
+
               {formData.dateOfBirth && (
                 <div>
                   <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
@@ -393,7 +395,7 @@ const Profile = () => {
                   )}
                 </div>
               )}
-              
+
               <div>
                 <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
                   Department
@@ -403,7 +405,7 @@ const Profile = () => {
                   <p className="text-neutral-900 dark:text-white">{profile?.department?.name || profile?.department || 'Not assigned'}</p>
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
                   Position
@@ -413,7 +415,7 @@ const Profile = () => {
                   <p className="text-neutral-900 dark:text-white">{profile?.position}</p>
                 </div>
               </div>
-              
+
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
                   Address
@@ -456,7 +458,7 @@ const Profile = () => {
                 Add Qualification
               </button>
             </div>
-            
+
             {profile?.qualifications && profile.qualifications.length > 0 ? (
               <div className="space-y-4">
                 {profile.qualifications.map((qual, index) => (
@@ -536,7 +538,7 @@ const Profile = () => {
                 <XMarkIcon className="h-6 w-6" />
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
@@ -551,7 +553,7 @@ const Profile = () => {
                   required
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
                   Institution *
@@ -565,7 +567,7 @@ const Profile = () => {
                   required
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
@@ -582,7 +584,7 @@ const Profile = () => {
                     required
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
                     Specialization
@@ -596,7 +598,7 @@ const Profile = () => {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
                   Certificate (Optional)
@@ -612,7 +614,7 @@ const Profile = () => {
                 </p>
               </div>
             </div>
-            
+
             <div className="mt-8 pt-6 border-t border-mustard-100 dark:border-mustard-900/30 flex justify-end space-x-3">
               <button
                 onClick={() => setShowQualificationModal(false)}
@@ -631,20 +633,7 @@ const Profile = () => {
         </div>
       )}
 
-      {/* Footer Link */}
-      <div className="text-center pt-8">
-        <a
-          href="https://makongeniwelfare.vercel.app/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center text-sm text-royal-600 hover:text-royal-700 dark:text-royal-400 dark:hover:text-royal-300"
-        >
-          Community Welfare Portal
-          <svg className="ml-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-        </a>
-      </div>
+
     </div>
   );
 };

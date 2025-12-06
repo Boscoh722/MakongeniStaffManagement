@@ -15,8 +15,10 @@ import {
   ExclamationTriangleIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline';
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const SupervisorLeaves = () => {
+  useDocumentTitle('Leave Management');
   const { user } = useSelector((state) => state.auth);
   const [leaves, setLeaves] = useState([]);
   const [filteredLeaves, setFilteredLeaves] = useState([]);
@@ -45,26 +47,26 @@ const SupervisorLeaves = () => {
     try {
       setLoading(true);
       const response = await staffService.getAllLeaves();
-      
+
       // Handle both response formats
       const leavesData = response.data?.leaves || response.data || [];
-      
+
       // Get staff under supervisor
       const staffResponse = await staffService.getStaff();
-      const supervisedStaff = staffResponse.data.filter(s => 
+      const supervisedStaff = staffResponse.data.filter(s =>
         s.role !== 'admin' && s.role !== 'supervisor'
       );
-      
+
       // Filter leaves for supervised staff
-      const supervisedLeaves = leavesData.filter(leave => 
-        supervisedStaff.some(staff => 
+      const supervisedLeaves = leavesData.filter(leave =>
+        supervisedStaff.some(staff =>
           staff._id === leave.staff?._id || staff._id === leave.staff
         )
       );
-      
+
       setLeaves(supervisedLeaves);
       setFilteredLeaves(supervisedLeaves);
-      
+
     } catch (error) {
       console.error('Error fetching leaves:', error);
       toast.error('Failed to load leave applications');
@@ -122,18 +124,18 @@ const SupervisorLeaves = () => {
 
     try {
       setUpdating(true);
-      
+
       await staffService.updateLeaveStatus(selectedLeave._id, {
         status: actionData.status,
         rejectionReason: actionData.status === 'rejected' ? actionData.rejectionReason : ''
       });
-      
+
       toast.success(`Leave ${actionData.status} successfully`);
       setShowActionModal(false);
       setSelectedLeave(null);
       setActionData({ status: '', rejectionReason: '' });
       fetchLeaves(); // Refresh data
-      
+
     } catch (error) {
       console.error('Error updating leave status:', error);
       toast.error('Failed to update leave status');
@@ -144,15 +146,15 @@ const SupervisorLeaves = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'approved': 
+      case 'approved':
         return 'bg-gradient-to-r from-mustard-100 to-mustard-200 text-mustard-800 dark:from-mustard-900/50 dark:to-mustard-800/50 dark:text-mustard-300';
-      case 'rejected': 
+      case 'rejected':
         return 'bg-gradient-to-r from-scarlet-100 to-scarlet-200 text-scarlet-800 dark:from-scarlet-900/50 dark:to-scarlet-800/50 dark:text-scarlet-300';
-      case 'pending': 
+      case 'pending':
         return 'bg-gradient-to-r from-royal-100 to-royal-200 text-royal-800 dark:from-royal-900/50 dark:to-royal-800/50 dark:text-royal-300';
-      case 'cancelled': 
+      case 'cancelled':
         return 'bg-gradient-to-r from-neutral-100 to-neutral-200 text-neutral-800 dark:from-neutral-900/50 dark:to-neutral-800/50 dark:text-neutral-300';
-      default: 
+      default:
         return 'bg-gradient-to-r from-neutral-100 to-neutral-200 text-neutral-800 dark:from-neutral-900/50 dark:to-neutral-800/50 dark:text-neutral-300';
     }
   };
@@ -179,7 +181,7 @@ const SupervisorLeaves = () => {
     const pending = leaves.filter(l => l.status === 'pending').length;
     const approved = leaves.filter(l => l.status === 'approved').length;
     const rejected = leaves.filter(l => l.status === 'rejected').length;
-    
+
     return { total, pending, approved, rejected };
   };
 
@@ -341,7 +343,7 @@ const SupervisorLeaves = () => {
                 placeholder="Search by name or ID..."
                 className="pl-10 w-full px-4 py-2.5 border border-mustard-200 dark:border-mustard-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-mustard-500 focus:border-transparent bg-white/70 dark:bg-neutral-900/70 text-neutral-900 dark:text-white placeholder-royal-400 dark:placeholder-royal-500 transition-all duration-200 hover:border-mustard-300 dark:hover:border-mustard-700"
                 value={filters.search}
-                onChange={(e) => setFilters({...filters, search: e.target.value})}
+                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
               />
             </div>
           </div>
@@ -353,7 +355,7 @@ const SupervisorLeaves = () => {
             <select
               className="w-full px-4 py-2.5 border border-mustard-200 dark:border-mustard-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-mustard-500 focus:border-transparent bg-white/70 dark:bg-neutral-900/70 text-neutral-900 dark:text-white transition-all duration-200 hover:border-mustard-300 dark:hover:border-mustard-700"
               value={filters.status}
-              onChange={(e) => setFilters({...filters, status: e.target.value})}
+              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
             >
               <option value="">All Status</option>
               <option value="pending">Pending</option>
@@ -370,7 +372,7 @@ const SupervisorLeaves = () => {
             <select
               className="w-full px-4 py-2.5 border border-mustard-200 dark:border-mustard-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-mustard-500 focus:border-transparent bg-white/70 dark:bg-neutral-900/70 text-neutral-900 dark:text-white transition-all duration-200 hover:border-mustard-300 dark:hover:border-mustard-700"
               value={filters.leaveType}
-              onChange={(e) => setFilters({...filters, leaveType: e.target.value})}
+              onChange={(e) => setFilters({ ...filters, leaveType: e.target.value })}
             >
               <option value="">All Types</option>
               {getUniqueLeaveTypes().map(type => (
@@ -387,7 +389,7 @@ const SupervisorLeaves = () => {
               type="date"
               className="w-full px-4 py-2.5 border border-mustard-200 dark:border-mustard-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-mustard-500 focus:border-transparent bg-white/70 dark:bg-neutral-900/70 text-neutral-900 dark:text-white transition-all duration-200 hover:border-mustard-300 dark:hover:border-mustard-700"
               value={filters.startDate}
-              onChange={(e) => setFilters({...filters, startDate: e.target.value})}
+              onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
             />
           </div>
 
@@ -399,7 +401,7 @@ const SupervisorLeaves = () => {
               type="date"
               className="w-full px-4 py-2.5 border border-mustard-200 dark:border-mustard-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-mustard-500 focus:border-transparent bg-white/70 dark:bg-neutral-900/70 text-neutral-900 dark:text-white transition-all duration-200 hover:border-mustard-300 dark:hover:border-mustard-700"
               value={filters.endDate}
-              onChange={(e) => setFilters({...filters, endDate: e.target.value})}
+              onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
             />
           </div>
         </div>
@@ -532,7 +534,7 @@ const SupervisorLeaves = () => {
                   <XCircleIcon className="h-6 w-6 text-scarlet-500" />
                 )}
               </div>
-              
+
               {selectedLeave && (
                 <div className="mb-6 p-4 bg-gradient-to-r from-royal-50 to-royal-100/50 dark:from-royal-900/20 dark:to-royal-900/10 rounded-xl border border-royal-200 dark:border-royal-800">
                   <p className="font-medium text-neutral-900 dark:text-white">{selectedLeave.staff?.firstName} {selectedLeave.staff?.lastName}</p>
@@ -561,7 +563,7 @@ const SupervisorLeaves = () => {
                     rows="3"
                     placeholder="Enter reason for rejection..."
                     value={actionData.rejectionReason}
-                    onChange={(e) => setActionData({...actionData, rejectionReason: e.target.value})}
+                    onChange={(e) => setActionData({ ...actionData, rejectionReason: e.target.value })}
                   />
                 </div>
               )}
@@ -580,11 +582,10 @@ const SupervisorLeaves = () => {
                 </button>
                 <button
                   onClick={handleUpdateStatus}
-                  className={`px-4 py-2.5 text-sm font-medium text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 ${
-                    actionData.status === 'approved' 
-                      ? 'bg-gradient-to-r from-mustard-500 to-mustard-600 hover:from-mustard-600 hover:to-mustard-700' 
-                      : 'bg-gradient-to-r from-scarlet-500 to-scarlet-600 hover:from-scarlet-600 hover:to-scarlet-700'
-                  }`}
+                  className={`px-4 py-2.5 text-sm font-medium text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 ${actionData.status === 'approved'
+                    ? 'bg-gradient-to-r from-mustard-500 to-mustard-600 hover:from-mustard-600 hover:to-mustard-700'
+                    : 'bg-gradient-to-r from-scarlet-500 to-scarlet-600 hover:from-scarlet-600 hover:to-scarlet-700'
+                    }`}
                   disabled={updating}
                 >
                   {updating ? (
@@ -600,20 +601,7 @@ const SupervisorLeaves = () => {
         </div>
       )}
 
-      {/* Footer Link */}
-      <div className="text-center pt-4">
-        <a
-          href="https://makongeniwelfare.vercel.app/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center text-sm text-royal-600 hover:text-royal-700 dark:text-royal-400 dark:hover:text-royal-300"
-        >
-          Community Welfare Portal
-          <svg className="ml-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-        </a>
-      </div>
+
     </div>
   );
 };

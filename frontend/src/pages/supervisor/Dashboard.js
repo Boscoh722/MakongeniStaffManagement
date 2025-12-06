@@ -27,8 +27,10 @@ import {
 } from 'chart.js';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const SupervisorDashboard = () => {
+  useDocumentTitle('Dashboard');
   const { user } = useSelector((state) => state.auth);
   const [stats, setStats] = useState({
     staffCount: 0,
@@ -37,12 +39,12 @@ const SupervisorDashboard = () => {
     openCases: 0,
     recentActivities: []
   });
-  
+
   const [attendanceData, setAttendanceData] = useState({
     labels: [],
     datasets: []
   });
-  
+
   const [weeklyAttendance, setWeeklyAttendance] = useState([]);
   const [supervisedStaff, setSupervisedStaff] = useState([]); // Added state for supervised staff
   const [loading, setLoading] = useState(true);
@@ -61,25 +63,25 @@ const SupervisorDashboard = () => {
         staffService.getDisciplinaryCases ? staffService.getDisciplinaryCases() : Promise.resolve({ data: [] })
       ]);
 
-      const supervisedStaff = staffResponse.data.filter(s => 
+      const supervisedStaff = staffResponse.data.filter(s =>
         s.supervisor?._id === user._id || s.supervisor === user._id
       );
 
       setSupervisedStaff(supervisedStaff); // Store supervised staff
 
-      const pendingLeaves = leavesResponse.data.filter(l => 
-        l.status === 'pending' && 
+      const pendingLeaves = leavesResponse.data.filter(l =>
+        l.status === 'pending' &&
         supervisedStaff.some(s => s._id === l.staff._id)
       );
 
-      const openCases = casesResponse.data?.filter(c => 
-        c.status === 'open' && 
+      const openCases = casesResponse.data?.filter(c =>
+        c.status === 'open' &&
         supervisedStaff.some(s => s._id === c.staff?._id)
       ) || [];
 
       // Fetch attendance data
       await fetchAttendanceData(supervisedStaff);
-      
+
       // Fetch recent activities
       const recentActivities = await fetchRecentActivities(supervisedStaff);
 
@@ -118,33 +120,33 @@ const SupervisorDashboard = () => {
 
       // Get current week dates
       const weekDates = getCurrentWeekDates();
-      
+
       // Fetch attendance for the entire week with staff filter
       const response = await attendanceService.getAttendanceByDateRange(
         weekDates[0],
         weekDates[6],
         { staff: staffIds.join(',') }
       );
-      
+
       const attendanceRecords = response.data || [];
-      
+
       // Calculate attendance percentage for each day
       const weeklyData = weekDates.map(date => {
         const dayAttendance = attendanceRecords.filter(record => {
           const recordDate = new Date(record.date).toISOString().split('T')[0];
-          return recordDate === date && 
-                 staffIds.includes(record.staff?._id || record.staff) &&
-                 (record.status === 'present' || record.status === 'on-duty');
+          return recordDate === date &&
+            staffIds.includes(record.staff?._id || record.staff) &&
+            (record.status === 'present' || record.status === 'on-duty');
         });
-        
+
         if (staffIds.length === 0) return 0;
         return Math.round((dayAttendance.length / staffIds.length) * 100);
       });
 
       setWeeklyAttendance(weeklyData);
-      
+
       // Calculate overall attendance rate
-      const overallRate = weeklyData.length > 0 
+      const overallRate = weeklyData.length > 0
         ? Math.round(weeklyData.reduce((a, b) => a + b, 0) / weeklyData.length)
         : 0;
 
@@ -155,7 +157,7 @@ const SupervisorDashboard = () => {
       }));
 
       // Prepare chart data
-      const chartLabels = weekDates.map(date => 
+      const chartLabels = weekDates.map(date =>
         new Date(date).toLocaleDateString('en-US', { weekday: 'short' })
       );
 
@@ -209,17 +211,17 @@ const SupervisorDashboard = () => {
     const dates = [];
     const today = new Date();
     const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
-    
+
     // Start from Monday of current week
     const monday = new Date(today);
     monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-    
+
     for (let i = 0; i < 7; i++) {
       const date = new Date(monday);
       date.setDate(monday.getDate() + i);
       dates.push(date.toISOString().split('T')[0]); // Format as YYYY-MM-DD
     }
-    
+
     return dates;
   };
 
@@ -229,23 +231,23 @@ const SupervisorDashboard = () => {
       // First, try to get recent attendance activities
       const attendanceResponse = await attendanceService.getRecentActivities(5);
       const attendanceActivities = attendanceResponse.data || [];
-      
+
       // Filter for supervised staff
       const staffIds = supervisedStaff.map(s => s._id);
-      const filteredAttendance = attendanceActivities.filter(activity => 
+      const filteredAttendance = attendanceActivities.filter(activity =>
         staffIds.includes(activity.staff?._id || activity.staff)
       );
-      
+
       // Also get recent leave applications
-      const leavesResponse = await staffService.getAllLeaves({ 
-        limit: 5, 
-        sortBy: 'createdAt:desc' 
+      const leavesResponse = await staffService.getAllLeaves({
+        limit: 5,
+        sortBy: 'createdAt:desc'
       });
-      
-      const recentLeaves = leavesResponse.data.filter(leave => 
+
+      const recentLeaves = leavesResponse.data.filter(leave =>
         staffIds.includes(leave.staff._id)
       );
-      
+
       // Combine and format activities
       const combinedActivities = [
         ...filteredAttendance.map(activity => ({
@@ -271,12 +273,12 @@ const SupervisorDashboard = () => {
           type: 'leave'
         }))
       ];
-      
+
       // Sort by timestamp and limit to 5
       return combinedActivities
         .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
         .slice(0, 5);
-      
+
     } catch (error) {
       console.error('Error fetching activities:', error);
       return [];
@@ -545,11 +547,10 @@ const SupervisorDashboard = () => {
                 className="p-4 border border-mustard-200 dark:border-mustard-800 rounded-xl hover:shadow-xl transition-all duration-200 bg-gradient-to-r from-white/50 to-white/30 dark:from-neutral-900/30 dark:to-neutral-800/30 hover:scale-[1.02] relative group"
               >
                 {action.count !== undefined && (
-                  <span className={`absolute -top-2 -right-2 text-xs px-2 py-1 rounded-full ${
-                    action.title === 'Mark Attendance' && action.count === 'Low'
-                      ? 'bg-scarlet-100 text-scarlet-800 dark:bg-scarlet-900/50 dark:text-scarlet-300'
-                      : 'bg-mustard-100 text-mustard-800 dark:bg-mustard-900/50 dark:text-mustard-300'
-                  }`}>
+                  <span className={`absolute -top-2 -right-2 text-xs px-2 py-1 rounded-full ${action.title === 'Mark Attendance' && action.count === 'Low'
+                    ? 'bg-scarlet-100 text-scarlet-800 dark:bg-scarlet-900/50 dark:text-scarlet-300'
+                    : 'bg-mustard-100 text-mustard-800 dark:bg-mustard-900/50 dark:text-mustard-300'
+                    }`}>
                     {action.count}
                   </span>
                 )}
@@ -587,11 +588,10 @@ const SupervisorDashboard = () => {
             stats.recentActivities.map((activity) => (
               <div key={activity.id} className="flex items-center justify-between p-3 border-b border-mustard-100 dark:border-mustard-900/30 last:border-0 hover:bg-mustard-50/50 dark:hover:bg-mustard-900/20 rounded-lg transition-all duration-200">
                 <div className="flex items-center">
-                  <div className={`p-2 rounded-xl mr-3 ${
-                    activity.type === 'attendance' ? 'bg-mustard-100 dark:bg-mustard-900/50' :
+                  <div className={`p-2 rounded-xl mr-3 ${activity.type === 'attendance' ? 'bg-mustard-100 dark:bg-mustard-900/50' :
                     activity.type === 'leave' ? 'bg-royal-100 dark:bg-royal-900/50' :
-                    'bg-scarlet-100 dark:bg-scarlet-900/50'
-                  }`}>
+                      'bg-scarlet-100 dark:bg-scarlet-900/50'
+                    }`}>
                     {activity.type === 'attendance' && <CheckCircleIcon className="h-4 w-4 text-mustard-600 dark:text-mustard-400" />}
                     {activity.type === 'leave' && <CalendarIcon className="h-4 w-4 text-royal-600 dark:text-royal-400" />}
                     {activity.type === 'case' && <ExclamationTriangleIcon className="h-4 w-4 text-scarlet-600 dark:text-scarlet-400" />}
@@ -625,20 +625,7 @@ const SupervisorDashboard = () => {
         </div>
       </div>
 
-      {/* Footer Link */}
-      <div className="text-center pt-4">
-        <a
-          href="https://makongeniwelfare.vercel.app/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center text-sm text-royal-600 hover:text-royal-700 dark:text-royal-400 dark:hover:text-royal-300"
-        >
-          Community Welfare Portal
-          <svg className="ml-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-        </a>
-      </div>
+
     </div>
   );
 };

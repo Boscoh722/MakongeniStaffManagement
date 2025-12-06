@@ -15,8 +15,10 @@ import {
   FolderIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const DisciplinaryAppeal = () => {
+  useDocumentTitle('Submit Appeal');
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -36,7 +38,7 @@ const DisciplinaryAppeal = () => {
   const fetchActiveCases = async () => {
     try {
       const response = await staffService.getDisciplinaryCases();
-      const activeCases = response.data.filter(caseItem => 
+      const activeCases = response.data.filter(caseItem =>
         caseItem.status === 'active' || caseItem.status === 'warning'
       );
       setCases(activeCases);
@@ -60,14 +62,14 @@ const DisciplinaryAppeal = () => {
       toast.error('Maximum 5 files allowed');
       return;
     }
-    
+
     // Check file sizes
     const oversizedFiles = files.filter(file => file.size > 5 * 1024 * 1024); // 5MB
     if (oversizedFiles.length > 0) {
       toast.error('Some files exceed 5MB limit');
       return;
     }
-    
+
     setFormData(prev => ({
       ...prev,
       supportingDocuments: [...prev.supportingDocuments, ...files]
@@ -83,7 +85,7 @@ const DisciplinaryAppeal = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.caseId) {
       toast.error('Please select a case to appeal');
       return;
@@ -96,7 +98,7 @@ const DisciplinaryAppeal = () => {
 
     try {
       setLoading(true);
-      
+
       const appealData = {
         caseId: formData.caseId,
         reason: formData.appealReason,
@@ -154,7 +156,7 @@ const DisciplinaryAppeal = () => {
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center text-sm text-royal-600 dark:text-royal-400">
           <InformationCircleIcon className="h-5 w-5 mr-2" />
           Last updated: {new Date().toLocaleDateString()}
@@ -169,7 +171,7 @@ const DisciplinaryAppeal = () => {
               <DocumentIcon className="h-5 w-5 mr-2 text-scarlet-500" />
               Active Cases
             </h3>
-            
+
             {cases.length === 0 ? (
               <div className="text-center py-8">
                 <CheckCircleIcon className="h-12 w-12 text-mustard-400 dark:text-mustard-500 mx-auto" />
@@ -183,11 +185,10 @@ const DisciplinaryAppeal = () => {
                   <button
                     key={caseItem._id}
                     onClick={() => handleCaseSelect(caseItem)}
-                    className={`w-full p-4 rounded-xl text-left transition-all duration-200 border ${
-                      selectedCase?._id === caseItem._id
-                        ? `${getAppealTypeColor(caseItem.type)} dark:${getAppealTypeColor(caseItem.type).replace('50', '900/30').replace('100/50', '900/20')} border-mustard-300 dark:border-mustard-700 shadow-lg scale-[1.02]`
-                        : `bg-white/50 dark:bg-neutral-900/50 ${getAppealTypeBorder(caseItem.type)} dark:border-neutral-700 hover:shadow-md hover:scale-[1.01]`
-                    }`}
+                    className={`w-full p-4 rounded-xl text-left transition-all duration-200 border ${selectedCase?._id === caseItem._id
+                      ? `${getAppealTypeColor(caseItem.type)} dark:${getAppealTypeColor(caseItem.type).replace('50', '900/30').replace('100/50', '900/20')} border-mustard-300 dark:border-mustard-700 shadow-lg scale-[1.02]`
+                      : `bg-white/50 dark:bg-neutral-900/50 ${getAppealTypeBorder(caseItem.type)} dark:border-neutral-700 hover:shadow-md hover:scale-[1.01]`
+                      }`}
                   >
                     <div className="flex justify-between items-start">
                       <div>
@@ -259,7 +260,7 @@ const DisciplinaryAppeal = () => {
                           Selected Case: #{selectedCase.caseNumber || selectedCase._id.slice(-6)}
                         </h4>
                         <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
-                          Type: {selectedCase.type?.charAt(0).toUpperCase() + selectedCase.type?.slice(1)} 
+                          Type: {selectedCase.type?.charAt(0).toUpperCase() + selectedCase.type?.slice(1)}
                           • Severity: {selectedCase.severity}
                         </p>
                         <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
@@ -291,11 +292,10 @@ const DisciplinaryAppeal = () => {
                         key={type.value}
                         type="button"
                         onClick={() => setFormData({ ...formData, appealType: type.value })}
-                        className={`p-4 rounded-xl text-left transition-all duration-200 border-2 ${
-                          formData.appealType === type.value
-                            ? `${type.color} dark:${type.color.replace('50', '900/30').replace('100/50', '900/20')} border-mustard-300 dark:border-mustard-700 shadow-lg scale-[1.02]`
-                            : `bg-white/50 dark:bg-neutral-900/50 ${type.border} dark:border-neutral-700 hover:shadow-md hover:scale-[1.01]`
-                        }`}
+                        className={`p-4 rounded-xl text-left transition-all duration-200 border-2 ${formData.appealType === type.value
+                          ? `${type.color} dark:${type.color.replace('50', '900/30').replace('100/50', '900/20')} border-mustard-300 dark:border-mustard-700 shadow-lg scale-[1.02]`
+                          : `bg-white/50 dark:bg-neutral-900/50 ${type.border} dark:border-neutral-700 hover:shadow-md hover:scale-[1.01]`
+                          }`}
                       >
                         <div className="flex items-center">
                           <div className={`p-2 rounded-lg ${type.color.split(' ')[0]} ${type.color.split(' ')[1]} mr-3`}>
@@ -357,7 +357,7 @@ const DisciplinaryAppeal = () => {
                     >
                       Browse Files
                     </label>
-                    
+
                     {formData.supportingDocuments.length > 0 && (
                       <div className="mt-6">
                         <h5 className="text-sm font-medium text-neutral-900 dark:text-white mb-3">
@@ -407,11 +407,10 @@ const DisciplinaryAppeal = () => {
                   <button
                     type="submit"
                     disabled={loading || !formData.caseId}
-                    className={`px-6 py-3 rounded-xl text-sm font-medium flex items-center shadow-lg hover:shadow-xl transition-all duration-200 ${
-                      loading || !formData.caseId
-                        ? 'bg-neutral-400 cursor-not-allowed text-white'
-                        : 'bg-gradient-to-r from-scarlet-500 to-scarlet-600 hover:from-scarlet-600 hover:to-scarlet-700 text-white'
-                    }`}
+                    className={`px-6 py-3 rounded-xl text-sm font-medium flex items-center shadow-lg hover:shadow-xl transition-all duration-200 ${loading || !formData.caseId
+                      ? 'bg-neutral-400 cursor-not-allowed text-white'
+                      : 'bg-gradient-to-r from-scarlet-500 to-scarlet-600 hover:from-scarlet-600 hover:to-scarlet-700 text-white'
+                      }`}
                   >
                     {loading ? (
                       <>
@@ -469,20 +468,7 @@ const DisciplinaryAppeal = () => {
         </div>
       </div>
 
-      {/* Footer Link */}
-      <div className="text-center pt-8">
-        <a
-          href="https://makongeniwelfare.vercel.app/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center text-sm text-royal-600 hover:text-royal-700 dark:text-royal-400 dark:hover:text-royal-300"
-        >
-          Community Welfare Portal
-          <svg className="ml-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-        </a>
-      </div>
+
     </div>
   );
 };

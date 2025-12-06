@@ -9,9 +9,11 @@ import {
   CalendarIcon,
   UserIcon
 } from '@heroicons/react/24/outline';
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const ClerkProcessLeave = () => {
   const { user } = useSelector((state) => state.auth);
+  useDocumentTitle('Process Leave');
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedLeave, setSelectedLeave] = useState(null);
@@ -200,8 +202,8 @@ const ClerkProcessLeave = () => {
               <button
                 onClick={handleLeaveAction}
                 className={`px-4 py-2 rounded-xl text-sm font-medium text-white shadow-lg hover:shadow-xl transition-all duration-200 ${action === 'approved'
-                    ? 'bg-gradient-to-r from-mustard-500 to-mustard-600 hover:from-mustard-600 hover:to-mustard-700'
-                    : 'bg-gradient-to-r from-scarlet-500 to-scarlet-600 hover:from-scarlet-600 hover:to-scarlet-700'
+                  ? 'bg-gradient-to-r from-mustard-500 to-mustard-600 hover:from-mustard-600 hover:to-mustard-700'
+                  : 'bg-gradient-to-r from-scarlet-500 to-scarlet-600 hover:from-scarlet-600 hover:to-scarlet-700'
                   }`}
               >
                 Confirm {action}

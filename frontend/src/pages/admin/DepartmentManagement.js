@@ -9,8 +9,10 @@ import {
   UsersIcon,
   BuildingOfficeIcon
 } from '@heroicons/react/24/outline';
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const DepartmentManagement = () => {
+  useDocumentTitle('Department Management');
   const [departments, setDepartments] = useState([]);
   const [managers, setManagers] = useState([]);
   const [loading, setLoading] = useState(true);

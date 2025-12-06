@@ -17,8 +17,10 @@ import {
   IdentificationIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const StaffOverview = () => {
+  useDocumentTitle('Staff Overview');
   const { user } = useSelector((state) => state.auth);
   const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +34,7 @@ const StaffOverview = () => {
   const fetchSupervisedStaff = async () => {
     try {
       const response = await staffService.getStaff();
-      const supervisedStaff = response.data.filter(s => 
+      const supervisedStaff = response.data.filter(s =>
         s.supervisor?._id === user._id || s.supervisor === user._id
       );
       setStaff(supervisedStaff);
@@ -49,13 +51,13 @@ const StaffOverview = () => {
   };
 
   const getStatusColor = (status) => {
-    return status === 'present' 
+    return status === 'present'
       ? 'bg-mustard-100 text-mustard-800 dark:bg-mustard-900/50 dark:text-mustard-300'
       : 'bg-scarlet-100 text-scarlet-800 dark:bg-scarlet-900/50 dark:text-scarlet-300';
   };
 
   const getStatusIcon = (status) => {
-    return status === 'present' 
+    return status === 'present'
       ? <CheckCircleIcon className="h-5 w-5" />
       : <XCircleIcon className="h-5 w-5" />;
   };
@@ -143,7 +145,7 @@ const StaffOverview = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {staff.map((member) => {
           const attendanceStatus = getAttendanceStatus(member._id);
-          
+
           return (
             <div key={member._id} className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-mustard-100 dark:border-mustard-900/30 hover:shadow-xl hover:scale-[1.02] transition-all duration-200">
               <div className="flex items-start justify-between">
@@ -164,7 +166,7 @@ const StaffOverview = () => {
                   {getStatusIcon(attendanceStatus)}
                 </div>
               </div>
-              
+
               <div className="mt-4 space-y-3">
                 <div className="flex items-center text-sm text-neutral-600 dark:text-neutral-400">
                   <EnvelopeIcon className="h-4 w-4 mr-2 text-royal-500" />
@@ -187,7 +189,7 @@ const StaffOverview = () => {
                   </div>
                 )}
               </div>
-              
+
               <div className="mt-6 flex space-x-3">
                 <button
                   onClick={() => {
@@ -227,7 +229,7 @@ const StaffOverview = () => {
                 <XCircleIcon className="h-6 w-6" />
               </button>
             </div>
-            
+
             <div className="space-y-6">
               {/* Basic Information */}
               <div className="flex items-start">
@@ -280,11 +282,10 @@ const StaffOverview = () => {
                   </div>
                   <div>
                     <p className="text-sm text-neutral-500 dark:text-neutral-400">Status</p>
-                    <span className={`px-3 py-1 text-xs rounded-full font-medium ${
-                      selectedStaff.isActive 
-                        ? 'bg-gradient-to-r from-mustard-100 to-mustard-200 text-mustard-800 dark:from-mustard-900/50 dark:to-mustard-800/50 dark:text-mustard-300'
-                        : 'bg-gradient-to-r from-scarlet-100 to-scarlet-200 text-scarlet-800 dark:from-scarlet-900/50 dark:to-scarlet-800/50 dark:text-scarlet-300'
-                    }`}>
+                    <span className={`px-3 py-1 text-xs rounded-full font-medium ${selectedStaff.isActive
+                      ? 'bg-gradient-to-r from-mustard-100 to-mustard-200 text-mustard-800 dark:from-mustard-900/50 dark:to-mustard-800/50 dark:text-mustard-300'
+                      : 'bg-gradient-to-r from-scarlet-100 to-scarlet-200 text-scarlet-800 dark:from-scarlet-900/50 dark:to-scarlet-800/50 dark:text-scarlet-300'
+                      }`}>
                       {selectedStaff.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </div>
@@ -353,20 +354,7 @@ const StaffOverview = () => {
         </div>
       )}
 
-      {/* Footer Link */}
-      <div className="text-center pt-8">
-        <a
-          href="https://makongeniwelfare.vercel.app/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center text-sm text-royal-600 hover:text-royal-700 dark:text-royal-400 dark:hover:text-royal-300"
-        >
-          Community Welfare Portal
-          <svg className="ml-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-        </a>
-      </div>
+
     </div>
   );
 };

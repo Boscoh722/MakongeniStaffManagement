@@ -19,8 +19,10 @@ import {
 } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const StaffDashboard = () => {
+  useDocumentTitle('Dashboard');
   const { user, token } = useSelector((state) => state.auth);
   const [stats, setStats] = useState({
     attendance: {
@@ -208,7 +210,7 @@ const StaffDashboard = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((stat) => (
-          <div key={stat.title} 
+          <div key={stat.title}
             className={`bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border ${stat.border} hover:shadow-xl transition-all duration-200`}>
             <div className="flex items-center justify-between">
               <div>
@@ -271,7 +273,7 @@ const StaffDashboard = () => {
             ) : (
               <div className="space-y-4">
                 {upcomingLeaves.map((leave) => (
-                  <div key={leave.id} 
+                  <div key={leave.id}
                     className="p-4 bg-gradient-to-r from-royal-50 to-royal-100/50 dark:from-royal-900/20 dark:to-royal-900/10 rounded-xl border border-royal-200 dark:border-royal-800">
                     <div className="flex justify-between items-center">
                       <div>
@@ -320,7 +322,7 @@ const StaffDashboard = () => {
                 </div>
               ))}
             </div>
-            
+
             {/* Attendance Summary */}
             <div className="mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-700">
               <h4 className="text-sm font-medium text-neutral-900 dark:text-white mb-3">
