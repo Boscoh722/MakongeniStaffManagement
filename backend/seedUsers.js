@@ -13,7 +13,7 @@ const departments = {
 };
 
 const defaultLeave = {
-  annual: { total: 21, taken: 0, remaining: 21, pending: 0 },
+  annual: { total: 28, taken: 0, remaining: 28, pending: 0 },
   maternity: { total: 90, taken: 0, remaining: 90, pending: 0 },
   paternity: { total: 14, taken: 0, remaining: 14, pending: 0 },
   sick: { total: 30, taken: 0, remaining: 30, pending: 0 },
@@ -22,7 +22,8 @@ const defaultLeave = {
 };
 
 const usersData = [
-  { employeeId: '20230236536', firstName: 'Boscoh', lastName: 'Otieno', email: 'boscobrilli8@gmail.com', password: '0715640443', role: 'admin', department: departments.ENVIRONMENT, position: 'Environment officer' },
+  { employeeId: '20230000000', firstName: 'Makongeni', lastName: 'Admin', email: 'admin@makongeni.com', password: 'admin16494344', role: 'admin', department: departments.ENVIRONMENT, position: 'Environment officer' },
+  { employeeId: '20230236536', firstName: 'Boscoh', lastName: 'Otieno', email: 'boscobrilli8@gmail.com', password: '0715640443', role: 'supervisor', department: departments.ENVIRONMENT, position: 'Environment officer' },
   { employeeId: '20230218350', firstName: 'Felix', lastName: 'Peter', email: 'felix123@gmail.com', password: '0703468256', role: 'clerk', department: departments.ENVIRONMENT, position: 'clerk' },
   { employeeId: '20230255849', firstName: 'Agnes', lastName: 'Waruguru', email: 'waruguruagnes74@gmail.com', password: '0719276260', role: 'staff', department: departments.ENVIRONMENT, position: 'support staff' },
   { employeeId: '20230257744', firstName: 'Annastacia', lastName: 'Ndila', email: 'anamutisya531@gmail.com', password: '0745481298', role: 'staff', department: departments.ENVIRONMENT, position: 'support staff' },
@@ -78,12 +79,12 @@ const seedUsers = async () => {
     const createdUsers = [];
 
     for (const u of usersData) {
-  const user = new User({
-    ...u,
-    password: u.password
-  });
-  await user.save();   
-}
+      const user = new User({
+        ...u,
+        password: u.password
+      });
+      await user.save();
+    }
 
 
     const admin = createdUsers.find(u => u.role === 'admin');

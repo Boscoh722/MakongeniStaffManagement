@@ -8,7 +8,7 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading, error } = useSelector((state) => state.auth);
-  
+
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -18,7 +18,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const result = await dispatch(login(formData));
-    
+
     if (result.payload?.user) {
       switch (result.payload.user.role) {
         case 'admin':
@@ -57,7 +57,7 @@ const Login = () => {
             Staff Management System
           </p>
         </div>
-        
+
         <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm py-8 px-6 shadow-2xl rounded-2xl border border-mustard-100 dark:border-mustard-900/30">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
@@ -65,7 +65,7 @@ const Login = () => {
                 <p className="text-sm text-scarlet-700 dark:text-scarlet-300 text-center">{error}</p>
               </div>
             )}
-            
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 Email Address
@@ -138,7 +138,7 @@ const Login = () => {
         <div className="text-center space-y-4">
           <div className="pt-4 border-t border-mustard-200/50 dark:border-mustard-800/50">
             <p className="text-sm text-neutral-600 dark:text-neutral-400 font-sans">
-              Looking for community welfare services? 
+              Looking for staff welfare services?
             </p>
             <a
               href="https://makongeniwelfare.vercel.app/"
@@ -146,13 +146,13 @@ const Login = () => {
               rel="noopener noreferrer"
               className="inline-flex items-center mt-2 text-royal-600 hover:text-royal-700 dark:text-royal-400 dark:hover:text-royal-300 font-medium transition-all duration-200 hover:gap-2 group font-sans"
             >
-              Visit Welfare Portal
+              Visit Staff Welfare Portal
               <svg className="ml-1.5 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
             </a>
           </div>
-          
+
           <p className="text-xs text-royal-500/70 dark:text-royal-400/60 pt-2 font-sans">
             © {new Date().getFullYear()} Makongeni Ward. Authorized access only.
           </p>

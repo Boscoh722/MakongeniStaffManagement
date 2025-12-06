@@ -67,7 +67,7 @@ const AttendanceTracking = () => {
     try {
       const startDate = new Date(filters.date);
       startDate.setDate(startDate.getDate() - 30);
-      
+
       const response = await staffService.getAttendanceStats({
         startDate: startDate.toISOString().split('T')[0],
         endDate: filters.date.toISOString().split('T')[0]
@@ -94,12 +94,12 @@ const AttendanceTracking = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'present': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'absent': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-      case 'late': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-      case 'leave': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-      case 'off-duty': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+      case 'present': return 'bg-mustard-100 text-mustard-800 dark:bg-mustard-900/50 dark:text-mustard-300';
+      case 'absent': return 'bg-scarlet-100 text-scarlet-800 dark:bg-scarlet-900/50 dark:text-scarlet-300';
+      case 'late': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300';
+      case 'leave': return 'bg-royal-100 text-royal-800 dark:bg-royal-900/50 dark:text-royal-300';
+      case 'off-duty': return 'bg-neutral-100 text-neutral-800 dark:bg-neutral-900/50 dark:text-neutral-300';
+      default: return 'bg-neutral-100 text-neutral-800 dark:bg-neutral-900/50 dark:text-neutral-300';
     }
   };
 
@@ -114,7 +114,7 @@ const AttendanceTracking = () => {
 
   const filteredAttendance = attendance.filter(record => {
     const searchLower = filters.search.toLowerCase();
-    const matchesSearch = 
+    const matchesSearch =
       record.staff.firstName.toLowerCase().includes(searchLower) ||
       record.staff.lastName.toLowerCase().includes(searchLower) ||
       record.staff.employeeId.toLowerCase().includes(searchLower);
@@ -139,40 +139,96 @@ const AttendanceTracking = () => {
           attendance.filter(a => a.status === 'off-duty').length
         ],
         backgroundColor: [
-          'rgba(56, 146, 56, 0.8)',
-          'rgba(239, 68, 68, 0.8)',
-          'rgba(245, 158, 11, 0.8)',
-          'rgba(59, 130, 246, 0.8)',
-          'rgba(156, 163, 175, 0.8)'
-        ]
+          'rgba(255, 191, 0, 0.8)',   // mustard
+          'rgba(255, 0, 0, 0.8)',      // scarlet
+          'rgba(245, 158, 11, 0.8)',   // yellow
+          'rgba(0, 102, 255, 0.8)',    // royal
+          'rgba(156, 163, 175, 0.8)'   // neutral
+        ],
+        borderColor: [
+          'rgba(255, 191, 0, 1)',
+          'rgba(255, 0, 0, 1)',
+          'rgba(245, 158, 11, 1)',
+          'rgba(0, 102, 255, 1)',
+          'rgba(156, 163, 175, 1)'
+        ],
+        borderWidth: 1
       }
     ]
   };
 
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: {
+          color: '#374151',
+          font: {
+            family: "'Neulis Sans', sans-serif"
+          }
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleFont: {
+          family: "'Neulis Sans', sans-serif"
+        },
+        bodyFont: {
+          family: "'Neulis Sans', sans-serif"
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          color: '#6B7280',
+          font: {
+            family: "'Neulis Sans', sans-serif"
+          }
+        },
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)'
+        }
+      },
+      x: {
+        ticks: {
+          color: '#6B7280',
+          font: {
+            family: "'Neulis Sans', sans-serif"
+          }
+        },
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)'
+        }
+      }
+    }
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6 bg-gradient-to-br from-royal-50 via-mustard-50 to-scarlet-50 dark:from-neutral-900 dark:via-royal-900 dark:to-scarlet-900 min-h-screen font-sans">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Attendance Tracking</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">Attendance Tracking</h1>
+          <p className="text-neutral-600 dark:text-neutral-400 mt-1">
             Track and manage staff attendance
           </p>
         </div>
         <div className="flex space-x-3">
           <button
             onClick={() => setShowStats(!showStats)}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 flex items-center"
+            className="px-4 py-2 border border-mustard-300 rounded-xl text-sm font-medium text-neutral-700 hover:bg-mustard-50 dark:border-mustard-600 dark:text-neutral-300 dark:hover:bg-mustard-900/30 flex items-center transition-all duration-200"
           >
             <ChartBarIcon className="h-4 w-4 mr-2" />
             {showStats ? 'Hide Stats' : 'Show Stats'}
           </button>
           <button
             onClick={() => {
-              // Export functionality
               toast.success('Export functionality will be implemented');
             }}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 flex items-center"
+            className="px-4 py-2 border border-mustard-300 rounded-xl text-sm font-medium text-neutral-700 hover:bg-mustard-50 dark:border-mustard-600 dark:text-neutral-300 dark:hover:bg-mustard-900/30 flex items-center transition-all duration-200"
           >
             <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
             Export
@@ -182,73 +238,66 @@ const AttendanceTracking = () => {
 
       {/* Statistics Panel */}
       {showStats && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-mustard-100 dark:border-mustard-900/30">
+          <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
             Attendance Statistics (Last 30 Days)
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-gray-900 dark:text-white">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div className="text-center p-4 bg-gradient-to-r from-mustard-50 to-mustard-100/50 dark:from-mustard-900/30 dark:to-mustard-900/20 rounded-xl border border-mustard-200 dark:border-mustard-800">
+              <div className="text-3xl font-bold text-neutral-900 dark:text-white">
                 {stats.attendancePercentage || 0}%
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Attendance Rate</div>
+              <div className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">Attendance Rate</div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600 dark:text-green-500">
+            <div className="text-center p-4 bg-gradient-to-r from-mustard-50 to-mustard-100/50 dark:from-mustard-900/30 dark:to-mustard-900/20 rounded-xl border border-mustard-200 dark:border-mustard-800">
+              <div className="text-3xl font-bold text-mustard-600 dark:text-mustard-400">
                 {stats.present || 0}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Present Days</div>
+              <div className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">Present Days</div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-red-600 dark:text-red-500">
+            <div className="text-center p-4 bg-gradient-to-r from-scarlet-50 to-scarlet-100/50 dark:from-scarlet-900/30 dark:to-scarlet-900/20 rounded-xl border border-scarlet-200 dark:border-scarlet-800">
+              <div className="text-3xl font-bold text-scarlet-600 dark:text-scarlet-400">
                 {stats.absent || 0}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Absent Days</div>
+              <div className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">Absent Days</div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600 dark:text-blue-500">
+            <div className="text-center p-4 bg-gradient-to-r from-royal-50 to-royal-100/50 dark:from-royal-900/30 dark:to-royal-900/20 rounded-xl border border-royal-200 dark:border-royal-800">
+              <div className="text-3xl font-bold text-royal-600 dark:text-royal-400">
                 {stats.averageHours || 0}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Avg Hours/Day</div>
+              <div className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">Avg Hours/Day</div>
             </div>
           </div>
-          <div className="mt-6">
-            <Bar data={chartData} options={{
-              responsive: true,
-              plugins: {
-                legend: {
-                  position: 'top',
-                }
-              }
-            }} />
+          <div className="mt-6 bg-white dark:bg-neutral-900/50 p-4 rounded-xl">
+            <Bar data={chartData} options={chartOptions} />
           </div>
         </div>
       )}
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-mustard-100 dark:border-mustard-900/30">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
               Date
             </label>
             <DatePicker
               selected={filters.date}
               onChange={(date) => setFilters({ ...filters, date })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark-green-500 focus:border-dark-green-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white"
+              className="w-full px-4 py-3 border border-mustard-200 rounded-xl focus:ring-2 focus:ring-mustard-500 focus:border-transparent dark:bg-neutral-900/70 dark:border-mustard-800 dark:text-white transition-all duration-200 hover:border-mustard-300 dark:hover:border-mustard-700"
             />
           </div>
 
           {/* Department */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
               Department
             </label>
             <select
               value={filters.department}
               onChange={(e) => setFilters({ ...filters, department: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark-green-500 focus:border-dark-green-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white"
+              className="w-full px-4 py-3 border border-mustard-200 rounded-xl focus:ring-2 focus:ring-mustard-500 focus:border-transparent dark:bg-neutral-900/70 dark:border-mustard-800 dark:text-white transition-all duration-200 hover:border-mustard-300 dark:hover:border-mustard-700"
             >
               <option value="">All Departments</option>
               {departments.map(dept => (
@@ -259,13 +308,13 @@ const AttendanceTracking = () => {
 
           {/* Status */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
               Status
             </label>
             <select
               value={filters.status}
               onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark-green-500 focus:border-dark-green-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white"
+              className="w-full px-4 py-3 border border-mustard-200 rounded-xl focus:ring-2 focus:ring-mustard-500 focus:border-transparent dark:bg-neutral-900/70 dark:border-mustard-800 dark:text-white transition-all duration-200 hover:border-mustard-300 dark:hover:border-mustard-700"
             >
               <option value="">All Status</option>
               <option value="present">Present</option>
@@ -278,7 +327,7 @@ const AttendanceTracking = () => {
 
           {/* Search */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
               Search
             </label>
             <div className="relative">
@@ -286,36 +335,35 @@ const AttendanceTracking = () => {
                 type="text"
                 value={filters.search}
                 onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-dark-green-500 focus:border-dark-green-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white"
+                className="w-full pl-10 pr-3 py-3 border border-mustard-200 rounded-xl focus:ring-2 focus:ring-mustard-500 focus:border-transparent dark:bg-neutral-900/70 dark:border-mustard-800 dark:text-white transition-all duration-200 hover:border-mustard-300 dark:hover:border-mustard-700 placeholder-royal-400 dark:placeholder-royal-500"
                 placeholder="Search staff..."
               />
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" />
+              <MagnifyingGlassIcon className="h-5 w-5 text-neutral-400 absolute left-3 top-3.5" />
             </div>
           </div>
         </div>
 
         <div className="mt-4 flex justify-between items-center">
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-sm text-neutral-600 dark:text-neutral-400">
             {filteredAttendance.length} staff members for {filters.date.toLocaleDateString()}
           </div>
           <div className="flex space-x-3">
             <button
-              onClick={() => setFilters({ 
-                date: new Date(), 
-                department: '', 
-                status: '', 
-                search: '' 
+              onClick={() => setFilters({
+                date: new Date(),
+                department: '',
+                status: '',
+                search: ''
               })}
-              className="text-sm text-dark-green-600 hover:text-dark-green-700 dark:text-dark-green-400"
+              className="text-sm text-mustard-600 hover:text-mustard-700 dark:text-mustard-400 transition-colors duration-200"
             >
               Clear Filters
             </button>
             <button
               onClick={() => {
-                // Bulk mark present
                 toast.success('Bulk marking functionality will be implemented');
               }}
-              className="text-sm text-green-600 hover:text-green-700 dark:text-green-400"
+              className="text-sm text-mustard-600 hover:text-mustard-700 dark:text-mustard-400 transition-colors duration-200"
             >
               Mark All Present
             </button>
@@ -324,62 +372,62 @@ const AttendanceTracking = () => {
       </div>
 
       {/* Attendance Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+      <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden border border-mustard-100 dark:border-mustard-900/30">
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-dark-green-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mustard-600"></div>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-900">
+            <table className="min-w-full divide-y divide-mustard-200 dark:divide-mustard-900/30">
+              <thead className="bg-gradient-to-r from-mustard-50 to-mustard-100/50 dark:from-mustard-900/30 dark:to-mustard-900/20">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-600 dark:text-neutral-300 uppercase tracking-wider">
                     Staff Member
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-600 dark:text-neutral-300 uppercase tracking-wider">
                     Department
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-600 dark:text-neutral-300 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-600 dark:text-neutral-300 uppercase tracking-wider">
                     Check In/Out
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-600 dark:text-neutral-300 uppercase tracking-wider">
                     Hours Worked
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-600 dark:text-neutral-300 uppercase tracking-wider">
                     Remarks
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-600 dark:text-neutral-300 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="divide-y divide-mustard-200 dark:divide-mustard-900/30">
                 {filteredAttendance.map((record) => (
-                  <tr key={record._id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
+                  <tr key={record._id} className="hover:bg-mustard-50/50 dark:hover:bg-mustard-900/20 transition-colors duration-200">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="h-10 w-10 flex-shrink-0">
-                          <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                            <span className="text-lg font-medium text-gray-600 dark:text-gray-300">
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-r from-mustard-100 to-royal-100 dark:from-mustard-900/50 dark:to-royal-900/50 flex items-center justify-center">
+                            <span className="text-lg font-medium text-neutral-700 dark:text-neutral-300">
                               {record.staff.firstName.charAt(0)}{record.staff.lastName.charAt(0)}
                             </span>
                           </div>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          <div className="text-sm font-medium text-neutral-900 dark:text-white">
                             {record.staff.firstName} {record.staff.lastName}
                           </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                          <div className="text-sm text-neutral-600 dark:text-neutral-400">
                             {record.staff.employeeId}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900 dark:text-neutral-300">
                       {record.staff.department}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -393,18 +441,18 @@ const AttendanceTracking = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 dark:text-white">
+                      <div className="text-sm text-neutral-900 dark:text-white">
                         {record.checkInTime ? new Date(record.checkInTime).toLocaleTimeString() : '--:--'}
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                      <div className="text-sm text-neutral-600 dark:text-neutral-400">
                         {record.checkOutTime ? new Date(record.checkOutTime).toLocaleTimeString() : '--:--'}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900 dark:text-neutral-300">
                       {record.hoursWorked ? `${record.hoursWorked.toFixed(2)} hrs` : 'N/A'}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 dark:text-gray-300 max-w-xs truncate" title={record.remarks}>
+                      <div className="text-sm text-neutral-900 dark:text-neutral-300 max-w-xs truncate" title={record.remarks}>
                         {record.remarks || 'No remarks'}
                       </div>
                     </td>
@@ -412,21 +460,21 @@ const AttendanceTracking = () => {
                       <div className="flex space-x-2">
                         <button
                           onClick={() => handleMarkAttendance(record.staff._id, 'present')}
-                          className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                          className="text-mustard-600 hover:text-mustard-700 dark:text-mustard-400 dark:hover:text-mustard-300 transition-colors duration-200"
                           title="Mark Present"
                         >
                           <CheckCircleIcon className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => handleMarkAttendance(record.staff._id, 'absent')}
-                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                          className="text-scarlet-600 hover:text-scarlet-700 dark:text-scarlet-400 dark:hover:text-scarlet-300 transition-colors duration-200"
                           title="Mark Absent"
                         >
                           <XCircleIcon className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => handleMarkAttendance(record.staff._id, 'late')}
-                          className="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300"
+                          className="text-yellow-600 hover:text-yellow-700 dark:text-yellow-400 dark:hover:text-yellow-300 transition-colors duration-200"
                           title="Mark Late"
                         >
                           <ExclamationTriangleIcon className="h-5 w-5" />
@@ -435,7 +483,7 @@ const AttendanceTracking = () => {
                           onClick={() => {
                             // View details
                           }}
-                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                          className="text-royal-600 hover:text-royal-700 dark:text-royal-400 dark:hover:text-royal-300 transition-colors duration-200"
                           title="View Details"
                         >
                           <EyeIcon className="h-5 w-5" />
@@ -452,53 +500,53 @@ const AttendanceTracking = () => {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-mustard-100 dark:border-mustard-900/30">
           <div className="flex items-center">
-            <div className="p-3 rounded-full bg-green-100 dark:bg-green-900 mr-4">
-              <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
+            <div className="p-3 rounded-xl bg-mustard-100 dark:bg-mustard-900/50 mr-4">
+              <CheckCircleIcon className="h-6 w-6 text-mustard-600 dark:text-mustard-400" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Present Today</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Present Today</p>
+              <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                 {attendance.filter(a => a.status === 'present').length}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-scarlet-100 dark:border-scarlet-900/30">
           <div className="flex items-center">
-            <div className="p-3 rounded-full bg-red-100 dark:bg-red-900 mr-4">
-              <XCircleIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
+            <div className="p-3 rounded-xl bg-scarlet-100 dark:bg-scarlet-900/50 mr-4">
+              <XCircleIcon className="h-6 w-6 text-scarlet-600 dark:text-scarlet-400" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Absent Today</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Absent Today</p>
+              <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                 {attendance.filter(a => a.status === 'absent').length}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-yellow-100 dark:border-yellow-900/30">
           <div className="flex items-center">
-            <div className="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900 mr-4">
+            <div className="p-3 rounded-xl bg-yellow-100 dark:bg-yellow-900/50 mr-4">
               <ExclamationTriangleIcon className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Late Today</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Late Today</p>
+              <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                 {attendance.filter(a => a.status === 'late').length}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-royal-100 dark:border-royal-900/30">
           <div className="flex items-center">
-            <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900 mr-4">
-              <ClockIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            <div className="p-3 rounded-xl bg-royal-100 dark:bg-royal-900/50 mr-4">
+              <ClockIcon className="h-6 w-6 text-royal-600 dark:text-royal-400" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">On Leave</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">On Leave</p>
+              <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                 {attendance.filter(a => a.status === 'leave').length}
               </p>
             </div>
