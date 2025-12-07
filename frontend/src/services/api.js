@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Base URL from environment or fallback
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api',
+  baseURL: process.env.REACT_APP_API_BASE_URL || 'https://staffmanagement-p9eq.onrender.com',
 });
 
 // Add token automatically to all requests
