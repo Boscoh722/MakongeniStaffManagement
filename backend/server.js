@@ -85,7 +85,7 @@ app.use('/api/audit', auditRoutes);
 app.use('/api/departments', departmentRoutes);
 
 // 404 handler
-app.use('*', (req, res) => {
+app.use('/*', (req, res) => {
   res.status(404).json({ error: 'Endpoint not found' });
 });
 
